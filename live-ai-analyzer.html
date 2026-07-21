@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>智能解析 | AI 智能 - 腾讯云直播控制台</title>
+<style>
+  :root {
+    --brand: #0052D9;
+    --brand-hover: #366EF4;
+    --brand-light: #ECF2FE;
+    --brand-soft: rgba(0, 82, 217, 0.06);
+    --text-1: #1D2129;
+    --text-2: #4E5969;
+    --text-3: #86909C;
+    --text-4: #C9CDD4;
+    --border: #E5E6EB;
+    --border-light: #F0F1F3;
+    --bg-page: #F7F8FA;
+    --bg-card: #FFFFFF;
+    --sidebar-w: 220px;
+    --header-h: 52px;
+    --radius: 10px;
+    --radius-sm: 8px;
+    --radius-pill: 16px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.06);
+    font-family: "PingFang SC", -apple-system, "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-1);
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+  /* 光晕从页面最顶部开始（覆盖整个视口，顶栏半透显示） */
+  body::before {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(58% 100% at 14% 0%, rgba(0,82,217,0.10) 0, transparent 60%),
+      radial-gradient(55% 100% at 86% 6%, rgba(107,91,210,0.09) 0, transparent 58%),
+      radial-gradient(46% 92% at 52% 0%, rgba(43,164,113,0.05) 0, transparent 62%);
+  }
+  a { text-decoration: none; color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #DCDFE6; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #C9CDD4; }
+
+  /* ============ 顶栏 ============ */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+    background: rgba(255,255,255,0.82); backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; margin-right: 28px; flex-shrink: 0; }
+  .logo .mark {
+    width: 22px; height: 22px; background: var(--brand); border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .logo .name { color: var(--text-2); font-size: 13px; }
+  .topnav { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+  .topnav a {
+    padding: 6px 12px; border-radius: 6px; color: var(--text-2);
+    font-size: 13px; white-space: nowrap; transition: background .15s, color .15s;
+  }
+  .topnav a:hover { background: var(--bg-page); color: var(--text-1); }
+  .topnav a.active { color: var(--brand); font-weight: 500; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .tb-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 6px; color: var(--text-2); font-size: 12px;
+    transition: background .15s, color .15s; margin-right: 4px; white-space: nowrap;
+  }
+  .tb-link:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; color: var(--text-2); cursor: pointer; transition: background .15s;
+  }
+  .icon-btn:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .user-chip {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #FFC58F, #FF9D5C);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 600; margin-left: 8px;
+  }
+
+  /* ============ 侧栏 ============ */
+  .sidebar {
+    position: fixed; left: 0; top: var(--header-h); bottom: 0;
+    width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 12px 0;
+  }
+  .menu-group { margin-bottom: 4px; }
+  .menu-group-title {
+    padding: 8px 20px; font-size: 11px; color: var(--text-3);
+    display: flex; align-items: center; justify-content: space-between;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 20px; font-size: 13px; color: var(--text-2);
+    cursor: pointer; transition: background .12s, color .12s; border-radius: 0;
+    position: relative;
+  }
+  .menu-item:hover { background: var(--bg-page); color: var(--text-1); }
+  .menu-item.active { color: var(--brand); background: var(--brand-soft); font-weight: 500; }
+  .menu-item.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--brand);
+  }
+  .menu-item .ic { width: 16px; height: 16px; flex-shrink: 0; color: currentColor; }
+  .menu-item .ic svg { width: 16px; height: 16px; }
+  .menu-sub { padding-left: 0; }
+  .menu-sub .menu-item { padding-left: 44px; font-size: 12.5px; }
+  .menu-sub .menu-item.active {
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .menu-sub .menu-item.active::before {
+    background: var(--brand);
+  }
+  .menu-group-toggle {
+    color: var(--text-3); font-size: 10px; cursor: pointer;
+    transition: transform .2s; user-select: none;
+  }
+  /* 不再对整个 toggle 做 rotate(180deg)，只对 ai-chevron 箭头单独旋转 */
+  .menu-group:not(.open) .menu-sub { display: none; }
+
+  /* AI+ 分组头部：标签 + 名称 + 折叠箭头一行 */
+  .ai-header {
+    padding: 7px 20px !important;
+    font-weight: 500;
+    color: var(--text-1);
+  }
+  .ai-label {
+    font-size: 11px; color: var(--text-3);
+    margin-right: 6px; letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .ai-name {
+    flex: 1; text-align: left;
+  }
+  .ai-chevron {
+    width: 14px; height: 14px; flex-shrink: 0;
+    color: var(--text-3);
+    transition: transform .2s ease;
+  }
+  .menu-group.open .ai-chevron {
+    transform: rotate(180deg);
+  }
+  .menu-item .badge {
+    margin-left: auto; font-size: 10px; background: #F0F1F3; color: var(--text-3);
+    padding: 1px 6px; border-radius: 8px;
+  }
+
+  /* ============ 主区 ============ */
+  .main {
+    margin-left: var(--sidebar-w); margin-top: var(--header-h);
+    min-height: calc(100vh - var(--header-h));
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;  /* 让 body::before 光晕透出来 */
+  }
+  .main-content {
+    position: relative;
+    width: 100%;
+    padding: 24px 28px 40px;
+  }
+  /* 光晕已移到 body::before（覆盖整页，从最顶部开始），这里不再单独加 */
+  .main-inner { position: relative; z-index: 1; padding: 0; max-width: 880px; width: 100%; margin: 0 auto; }
+
+  /* ============ 工作台卡片（一体）============ */
+  /* 工作区：去白卡，只有输入框用白色 */
+  .workbench {}
+
+  /* 头部（合并介绍区）——直接放底板 */
+  .wb-header {
+    display: grid; grid-template-columns: 1fr 360px;
+    gap: 12px; padding: 24px 28px 11px;
+    align-items: center;
+  }
+  .wb-header .left h1 {
+    font-size: 22px; font-weight: 600; color: var(--text-1);
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .wb-header .left h1 .spark {
+    width: 16px; height: 16px; color: var(--brand);
+  }
+  .wb-header .left p {
+    font-size: 13px; color: var(--text-2); line-height: 1.7; max-width: 440px;
+  }
+  .wb-header .right {
+    aspect-ratio: 21/9; border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, #6BA3E5 0%, #8B7BD8 50%, #9B8DC8 100%);
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+    color: #fff; text-align: center; padding: 12px 16px; gap: 10px;
+  }
+  .wb-header .right .live-tag {
+    position: absolute; top: 8px; left: 8px;
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.92); color: var(--text-1);
+    padding: 2px 7px 2px 5px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  }
+  .wb-header .right .live-tag::before {
+    content: ''; display: inline-block; width: 9px; height: 9px;
+    background: var(--brand);
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M23 7l-7 5 7 5V7zM1 6h11v12H1z' fill='black'/></svg>") center/contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M23 7l-7 5 7 5V7zM1 6h11v12H1z' fill='black'/></svg>") center/contain no-repeat;
+  }
+  .wb-header .right .placeholder-ic {
+    width: 24px; height: 24px; opacity: 0.85; flex-shrink: 0;
+  }
+  .wb-header .right .placeholder-ic svg { width: 100%; height: 100%; }
+  .wb-header .right .ph-title { font-size: 12px; font-weight: 500; }
+  .wb-header .right .ph-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+  .wb-header .right .ph-sub { font-size: 10px; opacity: 0.8; margin-top: 2px; }
+
+  /* tab 行已删除（智能解析/使用记录/使用指南/帮助中心）*/
+
+  /* ============ 大输入框（contenteditable div，仿输入框）============ */
+  .prompt-box {
+    margin: 10px 28px 16px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: #fff; transition: border-color .15s, box-shadow .15s;
+    position: relative;
+  }
+  .prompt-box:hover { border-color: #B5BFCC; }
+  .prompt-box:focus-within { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(0,82,217,0.10); }
+  .prompt-box.is-locked { border-color: rgba(0,82,217,0.35); background: linear-gradient(180deg, var(--brand-soft), transparent 60%); }
+  .prompt-box.is-locked:focus-within { box-shadow: 0 0 0 2px rgba(0,82,217,0.10); }
+
+  .prompt-input {
+    min-height: 120px; padding: 14px 18px 48px;
+    font-size: 14px; line-height: 1.85; color: var(--text-1);
+    outline: none;
+    word-break: break-all;
+  }
+  .prompt-input:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-3);
+  }
+  .prompt-input .url-line {
+    display: block; color: var(--text-1); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+  .prompt-input .url-line::before { content: '▶ '; color: var(--brand); font-family: inherit; }
+
+  /* 蓝色 cfg-tag（嵌进 prompt-input） */
+  .cfg-tag {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 1px 8px;
+    background: var(--brand-light);
+    color: var(--brand);
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+    vertical-align: baseline;
+    line-height: 1.6;
+    margin: 0 1px;
+  }
+  .cfg-tag:hover { background: #D9E5FC; }
+  .cfg-tag.open { background: #D9E5FC; }
+  .cfg-tag .cfg-text {
+    cursor: text; min-width: 12px; outline: none;
+    border-radius: 2px; padding: 0 1px;
+  }
+  .cfg-tag .cfg-text:focus { background: rgba(255,255,255,0.5); box-shadow: 0 0 0 1px rgba(0,82,217,0.3); }
+  .cfg-tag .cfg-text:empty::before {
+    content: attr(data-placeholder); color: #8C9AAA; font-weight: 400;
+  }
+  .cfg-tag .caret { font-size: 9px; opacity: 0.7; transition: transform .2s; pointer-events: auto; }
+  .cfg-tag.open .caret { transform: rotate(180deg); }
+  .cfg-tag .dd {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 140px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    padding: 4px 0;
+    z-index: 50;
+    display: none;
+  }
+  .cfg-tag.open .dd { display: block; }
+  .cfg-tag.is-placeholder .cfg-text { color: #8C9AAA; }
+  .cfg-tag.is-placeholder:hover .cfg-text { color: var(--brand); }
+  .cfg-tag .dd .opt {
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--text-1);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .12s;
+  }
+  .cfg-tag .dd .opt:hover { background: var(--bg-page); }
+  .cfg-tag .dd .opt.sel { color: var(--brand); background: var(--brand-soft); font-weight: 500; }
+
+  /* 数字 cfg-num（可点击编辑） */
+  .cfg-num {
+    display: inline-flex; align-items: center;
+    border: 1px solid rgba(0,82,217,0.35);
+    background: #fff;
+    border-radius: 4px;
+    color: var(--brand);
+    padding: 1px 6px;
+    font-weight: 500;
+    vertical-align: baseline;
+    line-height: 1.6;
+    margin: 0 2px;
+    transition: border-color .15s, background .15s;
+    cursor: text;
+    position: relative;
+  }
+  .cfg-num:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .cfg-num:hover::after {
+    content: '可编辑'; position: absolute; bottom: calc(100% + 4px); left: 50%;
+    transform: translateX(-50%); padding: 2px 6px; border-radius: 3px;
+    background: rgba(0,0,0,0.78); color: #fff; font-size: 10px; font-weight: 400;
+    white-space: nowrap; pointer-events: none; z-index: 10;
+  }
+  .cfg-num input {
+    width: 42px; border: none; outline: none;
+    background: transparent;
+    color: var(--brand);
+    font-weight: 500;
+    text-align: center;
+    font-size: 13px;
+    font-family: inherit;
+    padding: 0;
+    -moz-appearance: textfield;
+    cursor: text;
+  }
+  .cfg-num input::-webkit-outer-spin-button,
+  .cfg-num input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .cfg-num .unit { color: var(--text-2); font-size: 12px; font-weight: 400; margin-left: 3px; }
+  .cfg-num.err { border-color: #D54941; }
+  .cfg-num.err input { color: #D54941; }
+
+  /* lock-tag 已废弃：实时风格重绘模板改为 cfg-tag 内嵌"在线流"，不再需要锁定提示标签 */
+
+  /* ============ chip 行（去 + 添加能力）============ */
+  .chip-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px 14px;
+    justify-content: center;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: var(--radius-pill);
+    background: #fff; border: 1px solid var(--border);
+    font-size: 12.5px; color: var(--text-2); cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+    user-select: none; white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+  .chip.on {
+    border-color: var(--brand); color: var(--brand);
+    background: linear-gradient(180deg, var(--brand-soft), rgba(0,82,217,0.02));
+    font-weight: 500;
+  }
+  .chip .ico { width: 14px; height: 14px; display: flex; align-items: center; }
+  .chip .ico svg { width: 14px; height: 14px; }
+
+  .send-btn {
+    position: absolute; right: 14px; bottom: 12px;
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, #0052D9, #366EF4);
+    color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,82,217,0.25);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+  }
+  .send-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,82,217,0.32); }
+  .send-btn:active:not(:disabled) { transform: scale(0.96); }
+  .send-btn:disabled { cursor: not-allowed; opacity: 0.35; background: linear-gradient(135deg, #94B0E0, #B8C9E8); box-shadow: none; }
+  .send-btn svg { width: 18px; height: 18px; }
+
+  /* ============ chip 行（输入框外，居中）============ */
+  .chip-row-out {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0; margin: 0 28px 18px;
+  }
+
+  /* ============ 计费提示 ============ */
+  .tip-bar {
+    margin: 0 28px 24px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--brand-soft);
+    border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text-2);
+  }
+  .tip-bar .ic {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,82,217,0.10); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; font-style: italic; font-family: Georgia, serif;
+  }
+  .tip-bar a { color: var(--brand); margin-left: 2px; }
+  .tip-bar a:hover { color: var(--brand-hover); }
+
+  /* 拉流参数提示（等宽小字） */
+  .param-hint {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px; color: var(--brand);
+    background: var(--brand-light);
+    padding: 0 5px; border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  /* 发送成功提示 toast */
+  .toast {
+    position: fixed; right: 24px; top: calc(var(--header-h) + 16px); transform: translate(0, -16px);
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 13px 18px;
+    font-size: 13px; color: var(--text-1); max-width: 420px; z-index: 300;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;
+  }
+  .toast.show { opacity: 1; transform: translate(0, 0); }
+  .toast .t-ic {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    background: #2BA471; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; margin-top: 1px;
+  }
+  .toast .t-body a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+  .toast .t-body .param-hint { font-size: 11px; }
+
+  /* fade 动画 */
+  .fade { opacity: 0; transform: translateY(12px); animation: fadeUp .5s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header class="topbar">
+  <div class="logo">
+    <div class="mark">云</div>
+    <span class="name">腾讯云</span>
+  </div>
+  <nav class="topnav">
+    <a href="#">概览</a>
+    <a href="#" class="active">云直播</a>
+    <a href="#">云点播</a>
+    <a href="#">媒体处理</a>
+    <a href="#">对象存储</a>
+    <a href="#">CDN</a>
+  </nav>
+  <div class="right">
+    <a class="tb-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      存储位置
+    </a>
+    <a class="tb-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+      计算说明
+    </a>
+    <div class="icon-btn" title="搜索">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="icon-btn" title="消息">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </div>
+    <div class="icon-btn" title="帮助">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="icon-btn" title="文档">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="icon-btn" title="工单" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span style="position:absolute;top:4px;right:4px;width:6px;height:6px;background:#F56565;border-radius:50%"></span>
+    </div>
+    <div class="icon-btn" title="备案">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.49 0 4.74 1.01 6.36 2.64"/></svg>
+    </div>
+    <div class="user-chip">刘</div>
+  </div>
+</header>
+
+<!-- ============ 侧栏 ============ -->
+<aside class="sidebar">
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+    概览
+  </div>
+  <div class="menu-item" onclick="location.href='domain-advanced-config.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    域名管理
+  </div>
+  <div class="menu-item" onclick="location.href='live-stream-manage.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+    流管理
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+    资源包/插件管理
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">直播+</div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+    功能配置
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+    快捷操控
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+    云导播台
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+    拉流转推
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">AI 智能</div>
+  <div class="menu-item active">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg></span>
+    智能解析
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+    统计分析
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    实时监控
+  </div>
+</aside>
+
+<!-- ============ 主区 ============ -->
+<main class="main">
+  <div class="main-content">
+    <div class="main-inner">
+
+      <!-- 工作台卡片（一体） -->
+      <section class="workbench fade">
+
+        <!-- 头部（合并介绍区：标题 + 介绍语 + 右上 LIVE 占位） -->
+        <div class="wb-header">
+          <div class="left">
+            <h1>
+              边播边生成
+              <svg class="spark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+              高光切片、智能摘要
+            </h1>
+            <p>AI 智能解析直播流，适用于产品发布会、体育赛事、在线课堂等场景</p>
+          </div>
+          <div class="right">
+            <span class="live-tag">LIVE</span>
+            <div class="placeholder-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <div class="ph-text">
+              <div class="ph-title">AI 智能解析示意图</div>
+              <div class="ph-sub">（无图占位）</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 大输入框（contenteditable div） -->
+        <div class="prompt-box" id="promptBox">
+          <div class="prompt-input" id="promptInput" contenteditable="true" data-placeholder="请粘贴播放地址并选择下方处理玩法，AI 将自动生成预置提示词模板..."></div>
+          <button class="send-btn" title="发送" aria-label="发送" id="sendBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
+
+        <!-- chip 行（输入框外面，居中） -->
+        <div class="chip-row chip-row-out" id="chipGroup">
+          <div class="chip" data-id="highlight">
+            <span class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/></svg>
+            </span>
+            高光切片
+          </div>
+          <div class="chip" data-id="summary">
+            <span class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            </span>
+            智能摘要
+          </div>
+          <div class="chip" data-id="realtime-style">
+            <span class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+            </span>
+            实时风格重绘
+          </div>
+        </div>
+
+        <!-- 计费提示 -->
+        <div class="tip-bar">
+          <span class="ic">i</span>
+          <span>提交处理将产生相应费用，据调用能力按时长计费，详见 <a href="#">计费文档</a>。</span>
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  // ============ 配置状态（chip 切换时保留用户已选值）============
+  var CONFIG = {
+    scene:       { value: '游戏集锦',            options: ['游戏集锦','体育进球','演讲金句','舞蹈高光','搞笑瞬间','不限场景'] },
+    summaryType: { value: '智能摘要',            options: ['智能摘要','定时摘要'] },
+    wordCount:   { value: 50, min: 20, max: 200 },
+    inputLang:   { value: '自动探测（中/英）',  options: ['自动探测（中/英）','中文','英文','日文','韩文'] },
+    outputLang:  { value: '源语言',              options: ['源语言','中文','英文'] },
+    onlineStream:{ value: '请选择在线流', isPlaceholder: true, options: ['请选择在线流', 'live-001 ｜ 主直播间', 'live-002 ｜ 副直播间', 'live-003 ｜ 测试流', 'live-004 ｜ 备份流'] },
+    playDomain:  { value: '选择播放域名', isPlaceholder: true, options: ['选择播放域名', 'live-0001.liveplay.myqcloud.com', 'live-0002.liveplay.myqcloud.com', 'play.mydomain.com'] }
+  };
+
+  // ============ 蓝色 cfg-tag 构造器 ============
+  function buildCfgTag(key) {
+    var cfg = CONFIG[key];
+    var opts = cfg.options.map(function(o){
+      return '<div class="opt' + (o === cfg.value ? ' sel' : '') + '">' + o + '</div>';
+    }).join('');
+    // 占位态：cfg 配置里 isPlaceholder=true → cfg-text 灰色提示
+    var phClass = cfg.isPlaceholder ? ' is-placeholder' : '';
+    return '<span class="cfg-tag' + phClass + '" data-key="' + key + '" contenteditable="false">'
+      + '<span class="cfg-text" contenteditable="true" spellcheck="false" data-placeholder="选择或输入">' + cfg.value + '</span>'
+      + '<span class="caret" contenteditable="false">▾</span>'
+      + '<div class="dd">' + opts + '</div>'
+      + '</span>';
+  }
+  function buildCfgNum(key) {
+    var c = CONFIG[key];
+    return '<span class="cfg-num" data-key="' + key + '" contenteditable="false">'
+      + '<input type="number" min="' + c.min + '" max="' + c.max + '" value="' + c.value + '">'
+      + '<span class="unit">字</span>'
+      + '</span>';
+  }
+
+  // 不同 chip 的提示词模板（嵌进 contenteditable div，蓝色可点击下拉）
+  var TEMPLATES = {
+    highlight:
+      '对 ' + buildCfgTag('onlineStream')
+      + ' 进行高光切片，提取 '
+      + buildCfgTag('scene')
+      + ' 类精彩片段并生成媒体文件。',
+    summary:
+      '对 ' + buildCfgTag('onlineStream')
+      + ' 进行智能摘要，采用 '
+      + buildCfgTag('summaryType')
+      + ' 方式，每次摘要不超过 '
+      + buildCfgNum('wordCount')
+      + '，输入语言 '
+      + buildCfgTag('inputLang')
+      + '，输出语言 '
+      + buildCfgTag('outputLang')
+      + '。',
+    'realtime-style':
+      '自动将 ' + buildCfgTag('onlineStream') + ' 转换为动漫风格， ' + buildCfgTag('playDomain') + ' 拉流时携带参数 <code class="param-hint">txFeature=Restyle</code> 即可拉到重绘后的流'
+  };
+
+  // ============ DOM 引用 ============
+  var promptInput = document.getElementById('promptInput');
+  var promptBox   = document.getElementById('promptBox');
+  var chipGroup   = document.getElementById('chipGroup');
+  var activeChipId = null;  // 当前激活的 chip
+
+  // ============ 工具：取光标前的"行首"，用于"在 URL 下方追加" ============
+  // 优先取 .url-line 元素的内容（更可靠，<br> 不会在 textContent 里产生 \n）
+  function getFirstLine() {
+    var urlLine = promptInput.querySelector('.url-line');
+    if (urlLine) {
+      return urlLine.textContent.trim();
+    }
+    // 否则退回 textContent 第一行（用户直接键入 URL、未点 chip 的情况）
+    var text = promptInput.textContent || '';
+    var idx = text.indexOf('\n');
+    return idx > 0 ? text.substring(0, idx).trim() : text.trim();
+  }
+  function isUrlLike(s) {
+    return /^rtmp:\/\/|^http:\/\/|^https:\/\/|^\/|\.flv|\.m3u8/i.test(s);
+  }
+  function getUrlPrefix() {
+    var first = getFirstLine();
+    if (first && isUrlLike(first)) {
+      return '<span class="url-line" contenteditable="false">' + escapeHtml(first) + '</span><br>';
+    }
+    return '';
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ============ 把模板填到 promptInput ============
+  function fillTemplate(id) {
+    var html = getUrlPrefix() + TEMPLATES[id];
+    promptInput.innerHTML = html;
+    bindCfgHandlers();
+    if (id !== 'realtime-style') {
+      // 光标移到末尾
+      var range = document.createRange();
+      range.selectNodeContents(promptInput);
+      range.collapse(false);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+
+  function clearTemplate() {
+    // 清空模板（只有当第一行是 URL 时才保留；其他情况全清空）
+    var first = getFirstLine();
+    if (first && isUrlLike(first)) {
+      promptInput.innerHTML = '<span class="url-line" contenteditable="false">' + escapeHtml(first) + '</span><br>';
+    } else {
+      promptInput.innerHTML = '';
+    }
+  }
+
+  // ============ cfg-tag / cfg-num 交互 ============
+  function bindCfgHandlers() {
+    // cfg-tag：点击展开/收起
+    promptInput.querySelectorAll('.cfg-tag').forEach(function(tag){
+      tag.addEventListener('mousedown', function(e){
+        // 防止点击 cfg-tag 时 contenteditable 父级失焦
+        // 但点击 input/cfg-text 时不阻止（让用户能编辑）
+        if (e.target.closest('.dd')) return;
+        if (e.target.classList && (e.target.classList.contains('cfg-text') || e.target.tagName === 'INPUT')) return;
+        e.preventDefault();
+      });
+      // cfg-text：点击时不触发 dropdown（让用户能输入）
+      var cfgText = tag.querySelector('.cfg-text');
+      if (cfgText) {
+        cfgText.addEventListener('click', function(e){ e.stopPropagation(); });
+        cfgText.addEventListener('mousedown', function(e){ e.stopPropagation(); });
+        cfgText.addEventListener('input', function(){
+          var key = tag.getAttribute('data-key');
+          CONFIG[key].value = this.textContent;
+          // 用户输入了非空内容 → 退出占位态
+          if (this.textContent.trim() && CONFIG[key].isPlaceholder) {
+            tag.classList.remove('is-placeholder');
+          }
+        });
+        cfgText.addEventListener('focus', function(){
+          if (tag.classList.contains('is-placeholder') && CONFIG[tag.getAttribute('data-key')].value === CONFIG[tag.getAttribute('data-key')].options[0]) {
+            // 进入编辑时清空占位符
+            this.textContent = '';
+          }
+        });
+        cfgText.addEventListener('blur', function(){
+          if (!this.textContent.trim()) {
+            // 失焦且为空 → 恢复占位态
+            var key = tag.getAttribute('data-key');
+            this.textContent = CONFIG[key].options[0];
+            tag.classList.add('is-placeholder');
+          }
+        });
+      }
+      tag.addEventListener('click', function(e){
+        e.stopPropagation();
+        promptInput.querySelectorAll('.cfg-tag.open').forEach(function(t){
+          if (t !== tag) t.classList.remove('open');
+        });
+        tag.classList.toggle('open');
+      });
+      tag.querySelectorAll('.dd .opt').forEach(function(opt){
+        opt.addEventListener('mousedown', function(e){ e.preventDefault(); });
+        opt.addEventListener('click', function(e){
+          e.stopPropagation();
+          var key = tag.getAttribute('data-key');
+          var val = opt.textContent;
+          CONFIG[key].value = val;
+          tag.querySelector('.cfg-text').textContent = val;
+          tag.querySelectorAll('.dd .opt').forEach(function(o){ o.classList.remove('sel'); });
+          opt.classList.add('sel');
+          tag.classList.remove('open');
+          // 选中非占位项 → 退出占位态
+          if (CONFIG[key].isPlaceholder) {
+            tag.classList.toggle('is-placeholder', val === CONFIG[key].options[0]);
+          }
+        });
+      });
+    });
+    // cfg-num：失焦时校验
+    promptInput.querySelectorAll('.cfg-num input').forEach(function(input){
+      // mousedown 时如果点的是 input 本身 → 不 preventDefault（让 input 获得焦点）
+      // 点 cfg-num 容器才 preventDefault（防止 contenteditable 失焦）
+      input.parentElement.addEventListener('mousedown', function(e){
+        if (e.target.tagName === 'INPUT') return;  // 让 input 正常获取焦点
+        e.preventDefault();
+      });
+      input.addEventListener('focus', function(){ input.parentElement.classList.remove('err'); });
+      input.addEventListener('blur', function(){
+        var key = input.parentElement.getAttribute('data-key');
+        var c = CONFIG[key];
+        var v = parseInt(input.value, 10);
+        if (isNaN(v) || v < c.min) v = c.min;
+        if (v > c.max) v = c.max;
+        input.value = v;
+        c.value = v;
+        input.parentElement.classList.remove('err');
+      });
+      input.addEventListener('input', function(){
+        var key = input.parentElement.getAttribute('data-key');
+        var c = CONFIG[key];
+        var v = parseInt(input.value, 10);
+        if (isNaN(v) || v < c.min || v > c.max) {
+          input.parentElement.classList.add('err');
+        } else {
+          input.parentElement.classList.remove('err');
+          c.value = v;
+        }
+      });
+    });
+  }
+
+  // ============ 点击外部关闭所有 cfg-tag 下拉 ============
+  document.addEventListener('click', function(e){
+    if (e.target.closest('.cfg-tag')) return;
+    if (e.target.closest('.cfg-num')) return;
+    promptInput.querySelectorAll('.cfg-tag.open').forEach(function(t){ t.classList.remove('open'); });
+  });
+
+  // ============ chip 切换逻辑 ============
+  chipGroup.addEventListener('click', function(e) {
+    var chip = e.target.closest('.chip');
+    if (!chip) return;
+    var id = chip.getAttribute('data-id');
+    var wasOn = chip.classList.contains('on');
+
+    // 单选互斥
+    chipGroup.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+
+    if (wasOn) {
+      // 同 chip 再点 → 清空模板（保留 URL 行）
+      activeChipId = null;
+      promptBox.classList.remove('is-locked');
+      promptInput.setAttribute('contenteditable', 'true');
+      promptInput.style.cursor = 'text';
+      clearTemplate();
+    } else {
+      chip.classList.add('on');
+      activeChipId = id;
+      // 实时风格重绘：锁定态
+      if (id === 'realtime-style') {
+        promptBox.classList.add('is-locked');
+        promptInput.setAttribute('contenteditable', 'false');
+        promptInput.style.cursor = 'default';
+      } else {
+        promptBox.classList.remove('is-locked');
+        promptInput.setAttribute('contenteditable', 'true');
+        promptInput.style.cursor = 'text';
+      }
+      fillTemplate(id);
+    }
+    updateSendBtn();
+  });
+
+  // ============ 发送按钮 ============
+  var sendBtn = document.getElementById('sendBtn');
+  function updateSendBtn() {
+    // 有 chip 已选 或 输入框有内容 → 可提交
+    var hasContent = promptInput.textContent.trim().length > 0;
+    var hasChip = !!activeChipId;
+    sendBtn.disabled = !hasChip && !hasContent;
+  }
+  // 初始化为 disabled
+  updateSendBtn();
+  // 输入框内容变化时同步
+  promptInput.addEventListener('input', updateSendBtn);
+
+  // ============ 提示 toast ============
+  var toast = document.getElementById('toast');
+  var toastBody = document.getElementById('toastBody');
+  var toastTimer = null;
+  function showToast(html) {
+    toastBody.innerHTML = html;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 4200);
+  }
+
+  sendBtn.onclick = function(){
+    if (this.disabled) return;
+    var _pi = document.getElementById('promptInput');
+    var text = _pi.textContent.trim();
+    if (!text) return;
+    this.style.transform = 'scale(0.85)';
+    var self = this;
+    setTimeout(function(){
+      self.style.transform = '';
+      if (window.activeChipId === 'realtime-style') {
+        var stEl = _pi.querySelector('.cfg-tag[data-key="onlineStream"] .cfg-text');
+        var st = (stEl && stEl.textContent.trim() && stEl.textContent.trim() !== '请选择在线流') ? stEl.textContent.trim() : '当前直播流';
+        var _tb = document.getElementById('toastBody');
+        _tb.innerHTML = '已为「' + st + '」开通实时重绘，记录已同步至 <a href="domain-advanced-config.html" target="_blank" rel="noopener">域名管理 &gt; 高级配置 &gt; 实时重绘</a>。拉流方携带参数 <span class="param-hint">txFeature=Restyle</span> 即可看到动漫风格，未携带则为原始流。';
+        document.getElementById('toast').classList.add('show');
+        if (window._toastTimer) clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(function(){ document.getElementById('toast').classList.remove('show'); }, 4200);
+      } else {
+        var _tb2 = document.getElementById('toastBody');
+        _tb2.innerHTML = '已发送解析任务，AI 正在处理中…';
+        document.getElementById('toast').classList.add('show');
+        if (window._toastTimer) clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(function(){ document.getElementById('toast').classList.remove('show'); }, 4200);
+      }
+    }, 200);
+  };
+
+  // ============ 子菜单折叠（侧栏）============
+  document.querySelectorAll('.menu-group-toggle').forEach(function(t){
+    t.addEventListener('click', function(){
+      t.parentElement.classList.toggle('open');
+    });
+  });
+</script>
+
+  <!-- 发送成功提示 -->
+  <div class="toast" id="toast"><span class="t-ic">✓</span><div class="t-body" id="toastBody"></div></div>
+</body>
+</html>

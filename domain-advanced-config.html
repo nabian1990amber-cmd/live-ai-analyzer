@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>高级配置 - 实时重绘 | 域名管理 - 腾讯云直播控制台</title>
+<style>
+  :root {
+    --brand: #0052D9;
+    --brand-hover: #366EF4;
+    --brand-light: #ECF2FE;
+    --brand-soft: rgba(0, 82, 217, 0.06);
+    --text-1: #1D2129;
+    --text-2: #4E5969;
+    --text-3: #86909C;
+    --text-4: #C9CDD4;
+    --border: #E5E6EB;
+    --border-light: #F0F1F3;
+    --bg-page: #F7F8FA;
+    --bg-card: #FFFFFF;
+    --sidebar-w: 220px;
+    --header-h: 52px;
+    --radius: 10px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+    font-family: "PingFang SC", -apple-system, "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-1);
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+  /* 光晕从页面最顶部开始（覆盖整个视口，顶栏半透显示） */
+  body::before {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(58% 100% at 14% 0%, rgba(0,82,217,0.10) 0, transparent 60%),
+      radial-gradient(55% 100% at 86% 6%, rgba(107,91,210,0.09) 0, transparent 58%),
+      radial-gradient(46% 92% at 52% 0%, rgba(43,164,113,0.05) 0, transparent 62%);
+  }
+  a { text-decoration: none; color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #DCDFE6; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #C9CDD4; }
+
+  /* ============ 顶栏 ============ */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+    background: rgba(255,255,255,0.82); backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; margin-right: 28px; flex-shrink: 0; }
+  .logo .mark {
+    width: 22px; height: 22px; background: var(--brand); border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .logo .name { color: var(--text-2); font-size: 13px; }
+  .topnav { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+  .topnav a {
+    padding: 6px 12px; border-radius: 6px; color: var(--text-2);
+    font-size: 13px; white-space: nowrap; transition: background .15s, color .15s;
+  }
+  .topnav a:hover { background: var(--bg-page); color: var(--text-1); }
+  .topnav a.active { color: var(--brand); font-weight: 500; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .tb-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 6px; color: var(--text-2); font-size: 12px;
+    transition: background .15s, color .15s; margin-right: 4px; white-space: nowrap;
+  }
+  .tb-link:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; color: var(--text-2); cursor: pointer; transition: background .15s;
+  }
+  .icon-btn:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .user-chip {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #FFC58F, #FF9D5C);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 600; margin-left: 8px;
+  }
+
+  /* ============ 侧栏 ============ */
+  .sidebar {
+    position: fixed; left: 0; top: var(--header-h); bottom: 0;
+    width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 12px 0;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 20px; font-size: 13px; color: var(--text-2);
+    cursor: pointer; transition: background .12s, color .12s;
+    position: relative;
+  }
+  .menu-item:hover { background: var(--bg-page); color: var(--text-1); }
+  .menu-item.active { color: var(--brand); background: var(--brand-soft); font-weight: 500; }
+  .menu-item.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--brand);
+  }
+  .menu-item .ic { width: 16px; height: 16px; flex-shrink: 0; color: currentColor; }
+  .menu-item .ic svg { width: 16px; height: 16px; }
+  .menu-group-title {
+    padding: 8px 20px; font-size: 11px; color: var(--text-3);
+    display: flex; align-items: center; justify-content: space-between;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* ============ 主区 ============ */
+  .main {
+    margin-left: var(--sidebar-w); margin-top: var(--header-h);
+    min-height: calc(100vh - var(--header-h));
+    position: relative;
+    background: transparent;
+  }
+  .main-inner { position: relative; z-index: 1; max-width: 960px; width: 100%; margin: 0 auto; padding: 24px 28px 48px; }
+
+  /* 面包屑 + 域名选择 */
+  .crumb { font-size: 12px; color: var(--text-3); margin-bottom: 14px; }
+  .crumb a { color: var(--brand); cursor: pointer; }
+  .crumb .sep { margin: 0 6px; color: var(--text-4); }
+
+  .page-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .page-head h1 { font-size: 19px; font-weight: 600; color: var(--text-1); }
+  .domain-select {
+    height: 32px; border: 1px solid var(--border); border-radius: 6px;
+    padding: 0 30px 0 12px; font-size: 13px; color: var(--text-1); background: #fff;
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+  .domain-select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-soft); }
+
+  /* tabs */
+  .tabs { display: flex; gap: 28px; border-bottom: 1px solid var(--border); margin: 18px 0 0; }
+  .tab {
+    padding: 11px 0; font-size: 14px; color: var(--text-2); cursor: pointer;
+    border-bottom: 2px solid transparent; position: relative; top: 1px;
+    transition: color .15s;
+  }
+  .tab:hover { color: var(--text-1); }
+  .tab.active { color: var(--brand); font-weight: 500; border-bottom-color: var(--brand); }
+
+  /* 面板卡片 */
+  .panel {
+    background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius);
+    box-shadow: var(--shadow-card); padding: 20px 22px; margin-top: 16px;
+  }
+  .feature-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .feature-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .feature-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); flex-shrink: 0; }
+  .feature-desc { list-style: none; margin: 8px 0 0; padding: 0; font-size: 12.5px; color: var(--text-2); line-height: 1.9; max-width: 760px; }
+  .feature-desc li { position: relative; padding-left: 14px; }
+  .feature-desc li::before { content: '·'; position: absolute; left: 2px; }
+  .readonly-text { font-size: 13px; color: var(--text-1); }
+  .param-hint {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11.5px; color: var(--brand);
+    background: var(--brand-light); padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+  }
+  .link { color: var(--brand); cursor: pointer; }
+  .link:hover { color: var(--brand-hover); }
+
+  /* 开关 */
+  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+  .switch input { display: none; }
+  .switch .slider {
+    position: absolute; inset: 0; background: #C9CDD4; border-radius: 11px; transition: .2s; cursor: pointer;
+  }
+  .switch .slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px;
+    background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .switch input:checked + .slider { background: var(--brand); }
+  .switch input:checked + .slider::before { transform: translateX(18px); }
+
+  /* 工具栏 */
+  .toolbar { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; }
+  .toolbar .left { font-size: 13px; color: var(--text-1); font-weight: 500; }
+  .toolbar .left .count { color: var(--text-3); font-weight: 400; margin-left: 6px; }
+
+  /* 表格 */
+  .cfg-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .cfg-table th {
+    text-align: left; font-size: 12px; color: var(--text-3); font-weight: 500;
+    padding: 10px 12px; border-bottom: 1px solid var(--border-light); background: #FAFBFC;
+  }
+  .cfg-table td { font-size: 13px; color: var(--text-1); padding: 12px; border-bottom: 1px solid var(--border-light); }
+  .cfg-table tr:last-child td { border-bottom: none; }
+  .cfg-table .mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: var(--text-2); }
+  .tag-style { display: inline-block; padding: 1px 9px; border-radius: 10px; font-size: 12px; background: var(--brand-light); color: var(--brand); }
+  .status { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; }
+  .status .sd { width: 6px; height: 6px; border-radius: 50%; }
+  .status.on { color: #2BA471; } .status.on .sd { background: #2BA471; }
+  .status.off { color: var(--text-3); } .status.off .sd { background: var(--text-4); }
+  .row-op a { color: var(--brand); margin-right: 14px; cursor: pointer; }
+  .row-op a.del { color: var(--brand); }
+  .row-op a:hover { text-decoration: underline; }
+  .empty { text-align: center; color: var(--text-3); font-size: 13px; padding: 28px 0; }
+
+
+  /* 按钮 */
+  .btn {
+    height: 32px; padding: 0 16px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    border: 1px solid var(--border); background: #fff; color: var(--text-1); transition: .15s;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { border-color: var(--brand); color: var(--brand); }
+  .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); color: #fff; }
+
+  /* 弹窗 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.42);
+    display: none; align-items: center; justify-content: center; z-index: 200;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; width: 720px; max-width: 92vw;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18); overflow: hidden; animation: pop .18s ease;
+  }
+  @keyframes pop { from { transform: translateY(8px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-header {
+    padding: 17px 22px; border-bottom: 1px solid var(--border-light);
+    font-size: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header .x { cursor: pointer; color: var(--text-3); font-size: 18px; line-height: 1; }
+  .modal-header .x:hover { color: var(--text-1); }
+  .modal-body { padding: 24px 28px; max-height: 64vh; overflow-y: auto; }
+  .modal-footer {
+    padding: 13px 22px; border-top: 1px solid var(--border-light);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--text-1); margin-bottom: 6px; font-weight: 500; }
+  .field .req { color: #D54941; margin-left: 2px; white-space: nowrap; }
+  .field input, .field select {
+    width: 100%; height: 36px; border: 1px solid var(--border); border-radius: 6px;
+    padding: 0 12px; font-size: 13px; color: var(--text-1); background: #fff;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-soft); }
+  .field .hint { font-size: 12px; color: var(--text-3); margin-top: 5px; }
+  .radio-row { display: flex; gap: 22px; }
+  .radio { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-1); cursor: pointer; }
+  .radio input { accent-color: var(--brand); width: 15px; height: 15px; }
+  .field-row { display: flex; align-items: center; justify-content: space-between; }
+  .field-row label { margin-bottom: 0; }
+  /* 横向表单（参考「延播配置」弹窗规范）：
+     - label 固定宽 + 右对齐 + padding-top 匹配首行控件中心
+     - align-items: flex-start → label 位置由 padding-top 决定，hint 在控件区内不影响对齐
+  */
+  .field.hfield { display: flex; align-items: flex-start; gap: 16px; }
+  .field.hfield > label {
+    width: 90px; flex-shrink: 0; text-align: right;
+    margin-bottom: 0; line-height: 1.5;
+    padding-top: 9px; /* (36px input - 13px*1.5 line-height) / 2 ≈ 7.5 → 取 9（微调视觉居中） */
+  }
+  .field.hfield .field-ctrl { flex: 1; min-width: 0; }
+  /* hint 在控件区内部下方，不脱离 field-ctrl 流 */
+  .field .hint { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header class="topbar">
+  <div class="logo">
+    <span class="mark">云</span>
+    <span class="name">云直播</span>
+  </div>
+  <nav class="topnav">
+    <a href="#" onclick="return false;">概览</a>
+    <a href="#" onclick="return false;" class="active">域名管理</a>
+    <a href="#" onclick="return false;">流管理</a>
+    <a href="#" onclick="return false;">数据中心</a>
+  </nav>
+  <div class="right">
+    <a class="tb-link" href="#" onclick="return false;">费用</a>
+    <a class="tb-link" href="#" onclick="return false;">工单</a>
+    <div class="icon-btn" title="消息">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="user-chip">刘</div>
+  </div>
+</header>
+
+<!-- ============ 侧栏 ============ -->
+<aside class="sidebar">
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+    概览
+  </div>
+  <div class="menu-item active">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    域名管理
+  </div>
+  <div class="menu-item" onclick="location.href='live-stream-manage.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+    流管理
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+    资源包/插件管理
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">直播+</div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+    功能配置
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+    快捷操控
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+    云导播台
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+    拉流转推
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">AI 智能</div>
+  <div class="menu-item" onclick="location.href='live-ai-analyzer.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg></span>
+    智能解析
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+    统计分析
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    实时监控
+  </div>
+</aside>
+
+<!-- ============ 主区 ============ -->
+<main class="main">
+  <div class="main-inner">
+    <!-- 面包屑 -->
+    <div class="crumb">
+      <a href="#" onclick="return false;">域名管理</a>
+      <span class="sep">/</span>
+      <span>高级配置</span>
+    </div>
+
+    <!-- 页头 + 域名选择 -->
+    <div class="page-head">
+      <h1>高级配置</h1>
+      <select class="domain-select" id="domainSelect">
+        <option>push.live.example.com</option>
+        <option>push.test.example.com</option>
+        <option>live-push.tencent.com</option>
+      </select>
+    </div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      <div class="tab" data-tab="basic">基本配置</div>
+      <div class="tab active" data-tab="advance">高级配置</div>
+    </div>
+
+    <!-- 实时重绘配置面板 -->
+    <div class="panel" id="restylePanel">
+      <div class="feature-head">
+        <div class="feature-title"><span class="dot"></span>实时重绘</div>
+      </div>
+      <ul class="feature-desc">
+        <li>实时风格重绘是一项直播画面实时视觉风格转换能力，可应用于节庆专场、带货直播等场景。</li>
+        <li>在控制台开启实时重绘后，当前播放域名拉流时携带参数 <span class="param-hint">txFeature=Restyle</span> 即可拉到重绘后的流。</li>
+        <li>拉取实时重绘后的直播流会产生增值功能基础费。</li>
+      </ul>
+
+      <div class="toolbar">
+        <div class="left">配置规则</div>
+        <button class="btn btn-primary" id="addBtn">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          添加配置
+        </button>
+      </div>
+
+      <table class="cfg-table">
+        <thead>
+          <tr>
+            <th style="width:30%">StreamName</th>
+            <th style="width:22%">AppName</th>
+            <th style="width:18%">重绘风格</th>
+            <th style="width:22%">操作</th>
+          </tr>
+        </thead>
+        <tbody id="ruleBody"><!-- JS 渲染 --></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- ============ 添加/编辑配置弹窗 ============ -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modalTitle">实时重绘配置</span>
+      <span class="x" id="modalClose">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="field hfield">
+        <label>应用范围 <span class="req">*</span></label>
+        <div class="field-ctrl">
+          <div class="radio-row" id="scopeRadios">
+            <label class="radio"><input type="radio" name="scope" value="all" checked> 全部</label>
+            <label class="radio"><input type="radio" name="scope" value="custom"> 自定义</label>
+          </div>
+          <div class="hint" id="scopeHint">应用于域名级别实时重绘范围。</div>
+        </div>
+      </div>
+      <div class="field hfield" id="appField">
+        <label>AppName <span class="req">*</span></label>
+        <div class="field-ctrl">
+          <input id="fApp" type="text" placeholder="如 live" value="live">
+        </div>
+      </div>
+      <div class="field hfield" id="streamField">
+        <label>StreamName <span class="req">*</span></label>
+        <div class="field-ctrl">
+          <input id="fStream" type="text" placeholder="请输入 StreamName">
+        </div>
+      </div>
+      <div class="field hfield">
+        <label>重绘风格</label>
+        <div class="field-ctrl">
+          <span class="readonly-text">动漫风格</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="cancelBtn">取消</button>
+      <button class="btn btn-primary" id="saveBtn">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============ 数据模型 ============
+  var rules = [
+    { scope: 'all',    app: '-',    stream: '-' },
+    { scope: 'custom', app: 'live', stream: 'room1001' }
+  ];
+  var editIndex = -1; // -1 = 新增
+
+  var ruleBody   = document.getElementById('ruleBody');
+  var mask       = document.getElementById('modalMask');
+
+  function render() {
+    if (!rules.length) {
+      ruleBody.innerHTML = '<tr><td colspan="4" class="empty">暂无配置，点击右上角「添加配置」创建第一条规则</td></tr>';
+      return;
+    }
+    ruleBody.innerHTML = rules.map(function(r, i) {
+      var appTxt    = (r.scope === 'all') ? '全部' : r.app;
+      var streamTxt = (r.scope === 'all') ? '全部' : r.stream;
+      return '<tr>'
+        + '<td class="mono">' + streamTxt + '</td>'
+        + '<td class="mono">' + appTxt + '</td>'
+        + '<td>动漫风格</td>'
+        + '<td class="row-op">'
+          + '<a data-edit="' + i + '">编辑</a>'
+          + '<a class="del" data-del="' + i + '">删除</a>'
+        + '</td>'
+      + '</tr>';
+    }).join('');
+
+    ruleBody.querySelectorAll('[data-edit]').forEach(function(a){
+      a.onclick = function(){ openModal(parseInt(a.getAttribute('data-edit'), 10)); };
+    });
+    ruleBody.querySelectorAll('[data-del]').forEach(function(a){
+      a.onclick = function(){
+        var idx = parseInt(a.getAttribute('data-del'), 10);
+        rules.splice(idx, 1);
+        render();
+      };
+    });
+  }
+
+  // ============ 弹窗 ============
+  function syncScopeVisibility() {
+    var sc = document.querySelector('input[name="scope"]:checked').value;
+    var show = (sc === 'custom');
+    document.getElementById('appField').style.display    = show ? '' : 'none';
+    document.getElementById('streamField').style.display = show ? '' : 'none';
+    var hint = document.getElementById('scopeHint');
+    if (hint) {
+      hint.textContent = (sc === 'all')
+        ? '应用于域名级别实时重绘范围。'
+        : '应用于指定信息中，并优先生效。';
+    }
+  }
+
+  function openModal(idx) {
+    editIndex = (typeof idx === 'number') ? idx : -1;
+    document.getElementById('modalTitle').textContent = '实时重绘配置';
+    if (editIndex >= 0) {
+      var r = rules[editIndex];
+      var sc = r.scope || 'all';
+      document.querySelector('input[name="scope"][value="' + sc + '"]').checked = true;
+      document.getElementById('fApp').value    = (sc === 'custom') ? r.app : 'live';
+      document.getElementById('fStream').value = (sc === 'custom') ? r.stream : '';
+    } else {
+      document.querySelector('input[name="scope"][value="all"]').checked = true;
+      document.getElementById('fApp').value    = 'live';
+      document.getElementById('fStream').value = '';
+    }
+    syncScopeVisibility();
+    mask.classList.add('show');
+  }
+  function closeModal() { mask.classList.remove('show'); }
+
+  document.querySelectorAll('input[name="scope"]').forEach(function(radio){
+    radio.addEventListener('change', syncScopeVisibility);
+  });
+  document.getElementById('addBtn').onclick = function(){ openModal(-1); };
+  document.getElementById('modalClose').onclick = closeModal;
+  document.getElementById('cancelBtn').onclick = closeModal;
+  mask.addEventListener('click', function(e){ if (e.target === mask) closeModal(); });
+
+  document.getElementById('saveBtn').onclick = function(){
+    var sc     = document.querySelector('input[name="scope"]:checked').value;
+    var app    = document.getElementById('fApp').value.trim() || 'live';
+    var stream = document.getElementById('fStream').value.trim();
+    if (sc === 'custom') {
+      if (!app)    { alert('请填写 AppName'); return; }
+      if (!stream) { alert('请填写 StreamName'); return; }
+    }
+    var rec = {
+      scope:  sc,
+      app:    (sc === 'custom') ? app : '-',
+      stream: (sc === 'custom') ? stream : '-'
+    };
+    if (editIndex >= 0) { rules[editIndex] = rec; }
+    else { rules.push(rec); }
+    closeModal();
+    render();
+  };
+
+  // ============ tabs（演示：仅切换高亮）============
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.onclick = function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+      t.classList.add('active');
+    };
+  });
+
+  render();
+</script>
+</body>
+</html>
