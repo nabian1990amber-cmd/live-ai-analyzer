@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>实时重绘 · 体验 | AI 智能 - 腾讯云直播控制台</title>
+<style>
+  :root {
+    --brand: #0052D9;
+    --brand-hover: #366EF4;
+    --brand-light: #ECF2FE;
+    --brand-soft: rgba(0, 82, 217, 0.06);
+    --purple: #6B5BD2;
+    --purple-soft: rgba(107, 91, 210, 0.08);
+    --text-1: #1D2129;
+    --text-2: #4E5969;
+    --text-3: #86909C;
+    --text-4: #C9CDD4;
+    --border: #E5E6EB;
+    --border-light: #F0F1F3;
+    --bg-page: #F7F8FA;
+    --bg-card: #FFFFFF;
+    --sidebar-w: 220px;
+    --header-h: 52px;
+    --radius: 10px;
+    --radius-sm: 8px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.06);
+    font-family: "PingFang SC", -apple-system, "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-1);
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+  body::before {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(58% 100% at 14% 0%, rgba(0,82,217,0.10) 0, transparent 60%),
+      radial-gradient(55% 100% at 86% 6%, rgba(107,91,210,0.09) 0, transparent 58%),
+      radial-gradient(46% 92% at 52% 0%, rgba(43,164,113,0.05) 0, transparent 62%);
+  }
+  a { text-decoration: none; color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #DCDFE6; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #C9CDD4; }
+
+  /* ============ 顶栏 ============ */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+    background: rgba(255,255,255,0.82); backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; margin-right: 28px; flex-shrink: 0; }
+  .logo .mark {
+    width: 22px; height: 22px; background: var(--brand); border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .logo .name { color: var(--text-2); font-size: 13px; }
+  .topnav { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+  .topnav a {
+    padding: 6px 12px; border-radius: 6px; color: var(--text-2);
+    font-size: 13px; white-space: nowrap; transition: background .15s, color .15s;
+  }
+  .topnav a:hover { background: var(--bg-page); color: var(--text-1); }
+  .topnav a.active { color: var(--brand); font-weight: 500; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .tb-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 6px; color: var(--text-2); font-size: 12px;
+    transition: background .15s, color .15s; margin-right: 4px; white-space: nowrap;
+  }
+  .tb-link:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; color: var(--text-2); cursor: pointer; transition: background .15s;
+  }
+  .icon-btn:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .user-chip {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #FFC58F, #FF9D5C);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 600; margin-left: 8px;
+  }
+
+  /* ============ 侧栏 ============ */
+  .sidebar {
+    position: fixed; left: 0; top: var(--header-h); bottom: 0;
+    width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 12px 0;
+  }
+  .menu-group-title {
+    padding: 8px 20px; font-size: 11px; color: var(--text-3);
+    display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 20px; font-size: 13px; color: var(--text-2);
+    cursor: pointer; transition: background .12s, color .12s; position: relative;
+  }
+  .menu-item:hover { background: var(--bg-page); color: var(--text-1); }
+  .menu-item.active { color: var(--brand); background: var(--brand-soft); font-weight: 500; }
+  .menu-item.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--brand);
+  }
+  .menu-item .ic { width: 16px; height: 16px; flex-shrink: 0; color: currentColor; }
+  .menu-item .ic svg { width: 16px; height: 16px; }
+  .menu-item .new-badge {
+    margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: linear-gradient(135deg, #4A9EFF, #7B5CFF);
+    color: #fff; font-weight: 500; letter-spacing: 0.3px;
+  }
+
+  /* ============ 主区 ============ */
+  .main {
+    margin-left: var(--sidebar-w); margin-top: var(--header-h);
+    min-height: calc(100vh - var(--header-h));
+    position: relative;
+    background: transparent;
+  }
+  .main-content {
+    position: relative;
+    padding: 20px 24px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ============ 页头 ============ */
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 4px 4px 18px;
+  }
+  .page-header .titles h1 {
+    font-size: 20px; font-weight: 500; color: var(--text-1); line-height: 1.4;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .page-header .titles h1 .prefix { color: var(--text-3); font-size: 15px; font-weight: 400; }
+  .page-header .titles h1 .beta {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    background: linear-gradient(135deg, #4A9EFF, #7B5CFF); color: #fff; font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .page-header .titles p {
+    margin-top: 6px; font-size: 12.5px; color: var(--text-3); line-height: 1.6;
+  }
+  .btn-primary {
+    height: 34px; padding: 0 18px; border-radius: 6px;
+    background: var(--brand); color: #fff; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 400; transition: background .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: var(--brand-hover); }
+  .btn-primary svg { width: 13px; height: 13px; }
+
+  /* ============ 主卡片：左右布局 ============ */
+  .workbench {
+    background: #fff; border-radius: var(--radius);
+    border: 1px solid var(--border-light);
+    display: grid; grid-template-columns: 340px 1fr;
+    overflow: hidden; min-height: 560px;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ---- 左侧配置区 ---- */
+  .left-panel {
+    padding: 22px 22px 20px;
+    border-right: 1px solid var(--border-light);
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(74,158,255,0.02) 0%, rgba(123,92,255,0.02) 100%);
+  }
+  .lp-block { margin-bottom: 18px; }
+  .lp-label {
+    font-size: 12.5px; color: var(--text-1); font-weight: 500;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .lp-label .dot { width: 3px; height: 12px; background: var(--brand); border-radius: 2px; }
+
+  .select-wrap { position: relative; }
+  .select-input {
+    height: 36px; width: 100%;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 0 32px 0 12px;
+    background: #fff; color: var(--text-1); font-size: 13px;
+    display: flex; align-items: center; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .select-input:hover { border-color: var(--brand); }
+  .select-input .caret {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-3); width: 14px; height: 14px; pointer-events: none;
+  }
+  .select-menu {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 20;
+    padding: 4px; display: none;
+  }
+  .select-menu.show { display: block; }
+  .select-menu .opt {
+    padding: 7px 10px; border-radius: 4px; font-size: 13px;
+    cursor: pointer; color: var(--text-1);
+  }
+  .select-menu .opt:hover { background: var(--bg-page); }
+  .select-menu .opt.disabled { color: var(--text-4); cursor: not-allowed; }
+  .select-menu .opt.disabled:hover { background: transparent; }
+
+  /* Tab */
+  .tab-row {
+    display: flex; gap: 22px; border-bottom: 1px solid var(--border-light);
+    margin-bottom: 12px; margin-top: 4px;
+  }
+  .tab-row .tab {
+    padding: 6px 0; font-size: 13px; color: var(--text-2);
+    cursor: pointer; position: relative; transition: color .15s;
+  }
+  .tab-row .tab.active { color: var(--brand); font-weight: 500; }
+  .tab-row .tab.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2px; background: var(--brand); border-radius: 2px;
+  }
+  .tab-row .tab .help {
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+    border: 1px solid var(--text-4); color: var(--text-4);
+    font-size: 9px; line-height: 10px; text-align: center; margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .lp-textarea {
+    width: 100%; height: 100px;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; font-size: 12.5px; color: var(--text-1);
+    resize: none; font-family: inherit;
+    transition: border-color .15s;
+    background: #fff;
+  }
+  .lp-textarea:focus { outline: none; border-color: var(--brand); }
+  .lp-textarea::placeholder { color: var(--text-4); }
+
+  /* 示例卡 */
+  .examples-title {
+    text-align: center; font-size: 12px; color: var(--text-3);
+    margin: 6px 0 10px; display: flex; align-items: center; gap: 8px;
+    justify-content: center;
+  }
+  .examples-title .line { flex: 1; max-width: 40px; height: 1px; background: var(--border); }
+  .examples-title .plus { color: var(--brand); font-weight: 500; }
+  .examples {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 18px;
+  }
+  .example-card {
+    aspect-ratio: 1 / 1;
+    border-radius: 6px; overflow: hidden; cursor: pointer;
+    position: relative; border: 1px solid var(--border-light);
+    transition: border-color .15s, box-shadow .15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .example-card:hover { border-color: var(--brand); box-shadow: 0 2px 8px rgba(0,82,217,0.08); }
+  .example-card .thumb {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #fff;
+  }
+  .example-card .thumb.ecom {
+    background: linear-gradient(135deg, #FF9A8B 0%, #FF6A88 55%, #FF99AC 100%);
+  }
+  .example-card .thumb.show {
+    background: linear-gradient(135deg, #A18CD1 0%, #FBC2EB 100%);
+  }
+  .example-card .thumb.game {
+    background: linear-gradient(135deg, #4A9EFF 0%, #6B5BD2 100%);
+  }
+  .example-card .play {
+    position: relative; width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,0.35); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .example-card .play::after {
+    content: ''; width: 0; height: 0;
+    border-left: 7px solid #fff; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    margin-left: 2px;
+  }
+  .example-card .label {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 4px 6px; font-size: 10.5px; color: #fff;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 100%);
+    text-align: center; z-index: 3;
+  }
+
+  /* 立即生成按钮 */
+  .btn-cta {
+    height: 40px; width: 100%; border: none; border-radius: 8px;
+    background: linear-gradient(135deg, #4A9EFF 0%, #7B5CFF 100%);
+    color: #fff; font-size: 14px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: box-shadow .2s, transform .1s;
+    margin-top: auto;
+  }
+  .btn-cta:hover { box-shadow: 0 4px 16px rgba(74,158,255,0.35); }
+  .btn-cta:active { transform: translateY(1px); }
+  .btn-cta:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+  .btn-cta .spark {
+    width: 15px; height: 15px; color: #fff;
+  }
+
+  /* ---- 右侧预览区 ---- */
+  .right-panel {
+    display: flex; flex-direction: column;
+    padding: 18px 22px 20px;
+    position: relative;
+  }
+  .rp-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .rp-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border-light); }
+  .rp-tabs .tab {
+    padding: 6px 0; font-size: 13px; color: var(--text-2);
+    cursor: pointer; position: relative; transition: color .15s;
+  }
+  .rp-tabs .tab.active { color: var(--brand); font-weight: 500; }
+  .rp-tabs .tab.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2px; background: var(--brand); border-radius: 2px;
+  }
+  .rp-hint {
+    font-size: 11.5px; color: var(--text-3);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .rp-hint .warn-ic {
+    color: #F7BA1E; font-size: 12px;
+  }
+
+  /* 预览大画布 */
+  .preview-stage {
+    flex: 1; min-height: 380px;
+    border-radius: 8px;
+    position: relative;
+    background: #FAFBFC;
+    border: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .preview-stage::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(60% 80% at 30% 30%, rgba(74,158,255,0.08) 0, transparent 60%),
+      radial-gradient(50% 80% at 75% 70%, rgba(123,92,255,0.06) 0, transparent 65%);
+  }
+  .stage-empty {
+    text-align: center; color: var(--text-3); position: relative; z-index: 1;
+  }
+  .stage-empty .illu {
+    width: 96px; height: 96px; margin: 0 auto 16px;
+    opacity: 0.55;
+  }
+  .stage-empty .msg { font-size: 13px; }
+  .stage-empty .sub { font-size: 12px; color: var(--text-4); margin-top: 6px; }
+
+  /* Loading */
+  .stage-loading {
+    text-align: center; position: relative; z-index: 1;
+    color: var(--text-2);
+  }
+  .stage-loading .spinner {
+    width: 44px; height: 44px; margin: 0 auto 18px;
+    border: 3px solid var(--brand-light);
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .stage-loading .msg { font-size: 13.5px; margin-bottom: 6px; }
+  .stage-loading .progress-text {
+    font-size: 12px; color: var(--text-3);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* 结果画面（模拟视频） */
+  .stage-result {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .stage-result .canvas {
+    width: 92%; height: 92%; border-radius: 6px;
+    position: relative; overflow: hidden;
+    background: #1a1a2e;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage-result .canvas.original {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  }
+  .stage-result .canvas.restyled {
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,154,158,0.6), transparent 50%),
+      radial-gradient(circle at 70% 60%, rgba(123,92,255,0.7), transparent 55%),
+      radial-gradient(circle at 50% 80%, rgba(74,158,255,0.6), transparent 50%),
+      linear-gradient(135deg, #2d1b69 0%, #0f0c29 100%);
+    animation: hueShift 6s ease-in-out infinite alternate;
+  }
+  @keyframes hueShift { to { filter: hue-rotate(30deg) saturate(1.15); } }
+  .stage-result .mock-figure {
+    position: relative; z-index: 2;
+    color: rgba(255,255,255,0.9); text-align: center;
+    font-size: 14px; font-weight: 500;
+  }
+  .stage-result .mock-figure svg { width: 76px; height: 76px; opacity: 0.85; }
+  .stage-result .mock-caption {
+    position: absolute; bottom: 16px; left: 16px;
+    font-size: 12px; color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.35); backdrop-filter: blur(6px);
+    padding: 4px 10px; border-radius: 4px;
+  }
+  .stage-result .anime-tag {
+    position: absolute; top: 16px; left: 16px;
+    font-size: 11px; color: #fff; padding: 3px 9px; border-radius: 10px;
+    background: linear-gradient(135deg, #4A9EFF, #7B5CFF);
+    display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 2px 8px rgba(123,92,255,0.4);
+  }
+  .stage-result .anime-tag svg { width: 11px; height: 11px; }
+
+  .result-actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+    margin-top: 12px;
+  }
+  .btn-ghost {
+    height: 32px; padding: 0 14px; border-radius: 6px;
+    background: #fff; border: 1px solid var(--border);
+    color: var(--text-2); font-size: 12.5px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+  .btn-ghost svg { width: 12px; height: 12px; }
+
+  /* ============ 底部引导 banner ============ */
+  .cta-banner {
+    margin-top: 20px;
+    padding: 18px 24px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, rgba(74,158,255,0.08) 0%, rgba(123,92,255,0.08) 100%);
+    border: 1px solid rgba(74,158,255,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cta-banner .cta-text .t1 {
+    font-size: 14px; font-weight: 500; color: var(--text-1); margin-bottom: 3px;
+  }
+  .cta-banner .cta-text .t2 {
+    font-size: 12.5px; color: var(--text-2);
+  }
+  .cta-banner a.cta-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 6px;
+    background: var(--brand); color: #fff; font-size: 13px;
+    transition: background .15s;
+  }
+  .cta-banner a.cta-link:hover { background: var(--brand-hover); }
+
+  /* Toast */
+  .toast {
+    position: fixed; right: 24px; top: calc(var(--header-h) + 16px);
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 12px 16px;
+    font-size: 13px; color: var(--text-1); max-width: 380px; z-index: 300;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    transform: translateY(-8px);
+    display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast .t-ic {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    background: #2BA471; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; margin-top: 1px;
+  }
+
+  .fade { opacity: 0; transform: translateY(12px); animation: fadeUp .5s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header class="topbar">
+  <div class="logo">
+    <div class="mark">云</div>
+    <span class="name">腾讯云</span>
+  </div>
+  <nav class="topnav">
+    <a href="#">概览</a>
+    <a href="#" class="active">云直播</a>
+    <a href="#">云点播</a>
+    <a href="#">媒体处理</a>
+    <a href="#">对象存储</a>
+    <a href="#">CDN</a>
+  </nav>
+  <div class="right">
+    <a class="tb-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      存储位置
+    </a>
+    <a class="tb-link" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+      计算说明
+    </a>
+    <div class="icon-btn" title="搜索">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="icon-btn" title="消息">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </div>
+    <div class="icon-btn" title="帮助">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="icon-btn" title="文档">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="user-chip">刘</div>
+  </div>
+</header>
+
+<!-- ============ 侧栏 ============ -->
+<aside class="sidebar">
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+    概览
+  </div>
+  <div class="menu-item" onclick="location.href='domain-advanced-config.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    域名管理
+  </div>
+  <div class="menu-item" onclick="location.href='live-stream-manage.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+    流管理
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+    资源包/插件管理
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">直播+</div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+    功能配置
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+    快捷操控
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+    云导播台
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+    拉流转推
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">AI 智能</div>
+  <div class="menu-item" onclick="location.href='live-ai-analyzer.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg></span>
+    智能解析
+  </div>
+  <div class="menu-item active">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg></span>
+    实时重绘
+    <span class="new-badge">New</span>
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+    统计分析
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    实时监控
+  </div>
+</aside>
+
+<!-- ============ 主区 ============ -->
+<main class="main">
+  <div class="main-content">
+
+    <!-- 页头 -->
+    <div class="page-header fade">
+      <div class="titles">
+        <h1>
+          <span class="prefix">欢迎体验</span>
+          实时风格重绘
+          <span class="beta">Beta</span>
+        </h1>
+        <p>一键将直播画面转换为动漫风格，无需开通即可预览效果。满意后可前往域名管理开通生产使用。</p>
+      </div>
+      <button class="btn-primary" onclick="location.href='domain-advanced-config.html'">
+        立即开通
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <!-- 主卡片 -->
+    <section class="workbench fade" style="animation-delay:.08s">
+
+      <!-- 左侧配置 -->
+      <div class="left-panel">
+        <div class="lp-block">
+          <div class="lp-label"><span class="dot"></span>选择风格</div>
+          <div class="select-wrap">
+            <div class="select-input" id="styleSelect" onclick="toggleStyleMenu(event)">
+              <span id="styleValue">动漫风格</span>
+              <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="select-menu" id="styleMenu">
+              <div class="opt" onclick="selectStyle('动漫风格')">动漫风格</div>
+              <div class="opt disabled">水墨风格 · 敬请期待</div>
+              <div class="opt disabled">赛博朋克 · 敬请期待</div>
+              <div class="opt disabled">油画风格 · 敬请期待</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lp-block">
+          <div class="lp-label"><span class="dot"></span>输入方式</div>
+          <div class="tab-row">
+            <div class="tab active" onclick="switchInputTab(this,'url')">视频链接<span class="help">?</span></div>
+            <div class="tab" onclick="switchInputTab(this,'stream')">直播流<span class="help">?</span></div>
+          </div>
+          <textarea class="lp-textarea" id="inputBox" placeholder="输入公网可访问的直播流 URL 或 mp4 视频链接，可回车预览效果"></textarea>
+        </div>
+
+        <div class="examples-title">
+          <span class="line"></span>
+          <span class="plus">+</span> 试试以下示例 <span class="plus">+</span>
+          <span class="line"></span>
+        </div>
+        <div class="examples">
+          <div class="example-card" onclick="pickExample('ecom','电商带货','https://demo.myqcloud.com/samples/ecom-live.mp4')">
+            <div class="thumb ecom"></div>
+            <div class="play"></div>
+            <div class="label">电商带货</div>
+          </div>
+          <div class="example-card" onclick="pickExample('show','秀场直播','https://demo.myqcloud.com/samples/show-live.mp4')">
+            <div class="thumb show"></div>
+            <div class="play"></div>
+            <div class="label">秀场直播</div>
+          </div>
+          <div class="example-card" onclick="pickExample('game','游戏直播','https://demo.myqcloud.com/samples/game-live.mp4')">
+            <div class="thumb game"></div>
+            <div class="play"></div>
+            <div class="label">游戏直播</div>
+          </div>
+        </div>
+
+        <button class="btn-cta" id="generateBtn" onclick="runGenerate()">
+          <svg class="spark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+          立即生成
+        </button>
+      </div>
+
+      <!-- 右侧预览 -->
+      <div class="right-panel">
+        <div class="rp-toolbar">
+          <div class="rp-tabs">
+            <div class="tab active" id="tabRestyled" onclick="switchPreview('restyled')">效果预览</div>
+            <div class="tab" id="tabOriginal" onclick="switchPreview('original')">原视频</div>
+          </div>
+          <div class="rp-hint">
+            <span class="warn-ic">⚠</span>体验模式最长处理 180 秒画面，正式使用无此限制
+          </div>
+        </div>
+
+        <div class="preview-stage" id="previewStage">
+          <!-- 空态 -->
+          <div class="stage-empty" id="stageEmpty">
+            <svg class="illu" viewBox="0 0 96 96" fill="none">
+              <rect x="16" y="20" width="64" height="48" rx="4" stroke="#C9CDD4" stroke-width="2"/>
+              <circle cx="30" cy="34" r="4" fill="#DCDFE6"/>
+              <path d="M16 60l16-14 10 9 12-16 22 20v4a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4v-3z" fill="#EAECF0"/>
+              <path d="M62 8l1.8 5.6H70l-4.8 3.6 1.8 5.6L62 19l-4.8 3.8 1.8-5.6L54 13.6h6.2z" fill="#7B5CFF" opacity="0.6"/>
+            </svg>
+            <div class="msg">暂无内容，输入链接或点击左侧示例，一键预览重绘效果</div>
+            <div class="sub">首次生成大约需要 8~15 秒</div>
+          </div>
+
+          <!-- Loading -->
+          <div class="stage-loading" id="stageLoading" style="display:none">
+            <div class="spinner"></div>
+            <div class="msg">正在生成动漫风格效果……</div>
+            <div class="progress-text" id="progressText">已处理 0%</div>
+          </div>
+
+          <!-- 结果 -->
+          <div class="stage-result" id="stageResult" style="display:none">
+            <div class="canvas restyled" id="canvasRestyled">
+              <div class="anime-tag">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+                动漫风格
+              </div>
+              <div class="mock-figure">
+                <svg viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="50" cy="38" r="16"/>
+                  <path d="M20 90 Q20 60 50 60 Q80 60 80 90"/>
+                  <circle cx="44" cy="36" r="2" fill="rgba(255,255,255,0.95)"/>
+                  <circle cx="56" cy="36" r="2" fill="rgba(255,255,255,0.95)"/>
+                  <path d="M44 46 Q50 50 56 46" />
+                </svg>
+                <div style="margin-top:8px;font-size:13px;">重绘后预览</div>
+              </div>
+              <div class="mock-caption" id="captionRestyled">示例：电商带货 · 动漫风格</div>
+            </div>
+            <div class="canvas original" id="canvasOriginal" style="display:none">
+              <div class="mock-figure" style="color:rgba(255,255,255,0.75)">
+                <svg viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="50" cy="38" r="16"/>
+                  <path d="M20 90 Q20 60 50 60 Q80 60 80 90"/>
+                </svg>
+                <div style="margin-top:8px;font-size:13px;">原视频画面</div>
+              </div>
+              <div class="mock-caption" id="captionOriginal">示例：电商带货 · 原始画面</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-actions" id="resultActions" style="display:none">
+          <button class="btn-ghost" onclick="downloadResult()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            下载预览
+          </button>
+          <button class="btn-ghost" onclick="resetGenerate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            重新生成
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 底部引导 banner -->
+    <div class="cta-banner fade" style="animation-delay:.15s">
+      <div class="cta-text">
+        <div class="t1">✨ 体验满意？想在正式生产环境中使用</div>
+        <div class="t2">前往 域名管理 › 高级配置 › 实时重绘 为你的播放域名开通，即可对线上直播流生效</div>
+      </div>
+      <a class="cta-link" href="domain-advanced-config.html">
+        前往开通
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="t-ic">✓</div>
+  <div class="t-body" id="toastBody"></div>
+</div>
+
+<script>
+/* ============ 交互逻辑 ============ */
+var currentTab = 'url';
+var currentExample = { key: 'ecom', label: '电商带货' };
+var currentPreview = 'restyled';
+
+/* 风格下拉 */
+function toggleStyleMenu(e){
+  e.stopPropagation();
+  document.getElementById('styleMenu').classList.toggle('show');
+}
+function selectStyle(v){
+  document.getElementById('styleValue').textContent = v;
+  document.getElementById('styleMenu').classList.remove('show');
+}
+document.addEventListener('click', function(){
+  document.getElementById('styleMenu').classList.remove('show');
+});
+
+/* 输入方式 Tab */
+function switchInputTab(el, key){
+  currentTab = key;
+  el.parentElement.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  var box = document.getElementById('inputBox');
+  if (key === 'url') box.placeholder = '输入公网可访问的直播流 URL 或 mp4 视频链接，可回车预览效果';
+  else box.placeholder = '输入直播流地址（如 rtmp://... 或 flv://...），仅支持公网可拉流的地址';
+}
+
+/* 示例卡 */
+function pickExample(key, label, url){
+  currentExample = { key: key, label: label };
+  document.getElementById('inputBox').value = url;
+  runGenerate();
+}
+
+/* 生成流程 */
+var loadingTimer;
+function runGenerate(){
+  var val = document.getElementById('inputBox').value.trim();
+  if (!val){
+    showToast('请先输入视频链接或选择一个示例');
+    return;
+  }
+  // 进入 loading
+  document.getElementById('stageEmpty').style.display = 'none';
+  document.getElementById('stageResult').style.display = 'none';
+  document.getElementById('resultActions').style.display = 'none';
+  document.getElementById('stageLoading').style.display = 'block';
+  document.getElementById('generateBtn').disabled = true;
+
+  var pct = 0;
+  var progressEl = document.getElementById('progressText');
+  clearInterval(loadingTimer);
+  loadingTimer = setInterval(function(){
+    pct += Math.floor(6 + Math.random()*10);
+    if (pct >= 100){
+      pct = 100;
+      progressEl.textContent = '已处理 100%';
+      clearInterval(loadingTimer);
+      setTimeout(showResult, 300);
+    } else {
+      progressEl.textContent = '已处理 ' + pct + '%';
+    }
+  }, 240);
+}
+
+function showResult(){
+  document.getElementById('stageLoading').style.display = 'none';
+  document.getElementById('stageResult').style.display = 'flex';
+  document.getElementById('resultActions').style.display = 'flex';
+  document.getElementById('generateBtn').disabled = false;
+
+  // 更新 caption
+  document.getElementById('captionRestyled').textContent = '示例：' + currentExample.label + ' · 动漫风格';
+  document.getElementById('captionOriginal').textContent = '示例：' + currentExample.label + ' · 原始画面';
+
+  // 默认展示 restyled tab
+  switchPreview('restyled');
+}
+
+/* 预览 Tab 切换 */
+function switchPreview(which){
+  currentPreview = which;
+  document.getElementById('tabRestyled').classList.toggle('active', which==='restyled');
+  document.getElementById('tabOriginal').classList.toggle('active', which==='original');
+  document.getElementById('canvasRestyled').style.display = which==='restyled' ? 'flex' : 'none';
+  document.getElementById('canvasOriginal').style.display = which==='original' ? 'flex' : 'none';
+}
+
+/* 结果动作 */
+function downloadResult(){
+  showToast('体验模式生成的预览片段已开始下载（原型占位）');
+}
+function resetGenerate(){
+  document.getElementById('stageResult').style.display = 'none';
+  document.getElementById('resultActions').style.display = 'none';
+  document.getElementById('stageEmpty').style.display = 'block';
+  document.getElementById('inputBox').value = '';
+}
+
+/* Toast */
+var toastTimer;
+function showToast(msg){
+  var t = document.getElementById('toast');
+  document.getElementById('toastBody').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+</script>
+</body>
+</html>
