@@ -277,18 +277,24 @@
     background: #F5F5F5; color: var(--text-3);
   }
 
-  /* 左侧底部小引导 */
-  .bottom-tip {
-    margin-top: auto; padding-top: 14px;
-    border-top: 1px dashed var(--border-light);
-    display: flex; align-items: center; gap: 6px;
-    font-size: 11.5px; color: var(--text-3);
+  /* 左侧免费体验按钮 */
+  .try-btn {
+    width: 100%; height: 42px;
+    border: none; border-radius: 8px;
+    background: linear-gradient(135deg, #4A9EFF 0%, #7B5CFF 100%);
+    color: #fff; font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: box-shadow .2s, transform .1s, background .2s;
+    box-shadow: 0 3px 10px rgba(74,158,255,0.25);
   }
-  .bottom-tip a {
-    color: var(--brand); font-weight: 500;
-    display: inline-flex; align-items: center; gap: 3px;
+  .try-btn:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(74,158,255,0.4); }
+  .try-btn:active:not(:disabled) { transform: translateY(1px); }
+  .try-btn:disabled {
+    background: #F2F3F5; color: var(--text-4);
+    cursor: not-allowed; box-shadow: none;
   }
-  .bottom-tip a:hover { text-decoration: underline; }
+  .try-btn:disabled svg { color: var(--text-4); }
 
   /* ---------- 右侧效果区 ---------- */
   .right-panel {
@@ -437,38 +443,29 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-3);
   }
 
-  /* 右下底部动作条 */
+  /* 右下底部说明条 */
   .action-row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 14px; gap: 12px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-top: 14px; gap: 18px; flex-wrap: wrap;
   }
   .drag-hint {
     font-size: 11.5px; color: var(--text-3);
-    display: flex; align-items: center; gap: 5px;
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    padding-top: 2px;
   }
   .drag-hint svg { color: var(--text-4); }
-  .btn-group { display: flex; gap: 10px; }
-  .btn-primary {
-    height: 38px; padding: 0 22px; border: none; border-radius: 8px;
-    background: linear-gradient(135deg, #4A9EFF 0%, #7B5CFF 100%);
-    color: #fff; font-size: 13.5px; font-weight: 500; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px;
-    transition: box-shadow .2s, transform .1s;
-    box-shadow: 0 2px 8px rgba(74,158,255,0.25);
+  .prod-note {
+    font-size: 11.5px; color: var(--text-3);
+    display: flex; align-items: center; gap: 5px;
+    flex-wrap: wrap; line-height: 1.6;
+    text-align: right; justify-content: flex-end;
   }
-  .btn-primary:hover { box-shadow: 0 6px 18px rgba(74,158,255,0.4); }
-  .btn-primary:active { transform: translateY(1px); }
-  .btn-primary svg { width: 13px; height: 13px; }
-  .btn-ghost {
-    height: 38px; padding: 0 16px;
-    border: 1px solid var(--border); border-radius: 8px;
-    background: #fff; color: var(--text-1);
-    font-size: 13px; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 5px;
-    transition: border-color .15s, color .15s;
+  .prod-note svg { color: var(--text-4); flex-shrink: 0; }
+  .prod-note a {
+    color: var(--brand); font-weight: 500;
+    margin: 0 3px;
   }
-  .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
-  .btn-ghost svg { width: 13px; height: 13px; }
+  .prod-note a:hover { text-decoration: underline; }
 
   /* Toast */
   .toast {
@@ -659,14 +656,12 @@
           </div>
         </div>
 
-        <!-- 底部小引导 -->
-        <div class="bottom-tip">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-          <span>正式生产使用</span>
-          <a href="domain-advanced-config.html">
-            前往开通
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
+        <!-- 免费体验主 CTA -->
+        <div style="margin-top:auto; padding-top:16px;">
+          <button class="try-btn" id="tryBtn" onclick="startExperience()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+            <span id="tryBtnText">免费体验</span>
+          </button>
         </div>
       </div>
 
@@ -740,21 +735,17 @@
           <div class="time">00:12 / 00:38</div>
         </div>
 
-        <!-- 底部动作 -->
+        <!-- 底部说明 -->
         <div class="action-row">
           <div class="drag-hint">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 3 12 9 18"/><polyline points="15 6 21 12 15 18"/></svg>
-            拖动中间分割线对比效果 · 双击回到中间
+            拖动分割线对比 · 双击回到中间
           </div>
-          <div class="btn-group">
-            <button class="btn-ghost" onclick="downloadClip()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              下载对比片段
-            </button>
-            <button class="btn-primary" onclick="goActivate()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              我要为直播开通
-            </button>
+          <div class="prod-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            当前页面仅供效果体验，如需商用请前往
+            <a href="domain-advanced-config.html">域名管理 › 高级配置 › 实时重绘</a>
+            配置后使用
           </div>
         </div>
       </div>
@@ -803,18 +794,7 @@ function pickSrcTab(el, key){
   document.getElementById('inputUpload').classList.toggle('show', key === 'upload');
   document.getElementById('inputStream').classList.toggle('show', key === 'stream');
 
-  var empty = document.getElementById('empty');
-  var emptyMsg = document.getElementById('emptyMsg');
-  if (key === 'demo') {
-    empty.classList.add('hide');
-    triggerRefresh();
-  } else if (key === 'upload') {
-    emptyMsg.textContent = '上传视频后自动预览';
-    empty.classList.remove('hide');
-  } else if (key === 'stream') {
-    emptyMsg.textContent = '填入直播流地址后自动预览';
-    empty.classList.remove('hide');
-  }
+  markParamsChanged();
 }
 
 /* ============ Demo 切换 ============ */
@@ -822,7 +802,7 @@ function pickDemo(el, key){
   document.querySelectorAll('.demo-thumb').forEach(function(t){ t.classList.remove('active'); });
   el.classList.add('active');
   state.demo = key;
-  triggerRefresh();
+  markParamsChanged();
 }
 
 /* ============ 风格切换 ============ */
@@ -834,23 +814,10 @@ function pickStyle(el){
   var lbl = styleLabelMap[state.style] || '动漫风格';
   document.getElementById('styleLabel').textContent = lbl;
   document.getElementById('badgeStyle').textContent = lbl;
-  triggerRefresh(true);
+  markParamsChanged();
 }
 
-/* ============ 刷新画面（带轻 loading） ============ */
-var refreshTimer;
-function triggerRefresh(styleOnly){
-  var loading = document.getElementById('loading');
-  var loadingMsg = document.getElementById('loadingMsg');
-  loadingMsg.textContent = styleOnly ? '正在应用新风格……' : '正在切换素材……';
-  loading.classList.remove('hide');
-  clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(function(){
-    applyContent();
-    loading.classList.add('hide');
-  }, 800);
-}
-
+/* ============ 应用画面（切素材/风格用） ============ */
 function applyContent(){
   var c = demoContent[state.demo];
   if (!c) return;
@@ -858,6 +825,16 @@ function applyContent(){
   document.getElementById('canvasRestyled').style.background = c.stylColor;
   document.getElementById('capOriginal').textContent = c.origCap;
   document.getElementById('capRestyled').textContent = c.stylCap;
+}
+
+/* ============ 按钮态：参数改变时"重新体验"变蓝可点 ============ */
+function markParamsChanged(){
+  // 只在已经体验过（正在体验中或已结束）后，才提示"重新体验"
+  if (experienceStarted) {
+    var btn = document.getElementById('tryBtn');
+    btn.disabled = false;
+    document.getElementById('tryBtnText').textContent = '重新体验';
+  }
 }
 
 /* ============ 分割线拖动 ============ */
@@ -886,26 +863,65 @@ stage.addEventListener('dblclick', function(){
   restyled.style.clipPath = 'inset(0 0 0 50%)';
 });
 
-/* ============ 倒计时 ============ */
+/* ============ 免费体验触发 ============ */
+var experienceStarted = false;
 var remain = 180;
 var cdTimer;
-function startCountdown(){
+var refreshTimer;
+
+function startExperience(){
+  // 上传/拉流的话，需要用户先填内容
+  if (state.src === 'upload') {
+    var v = document.querySelector('#inputUpload input').value.trim();
+    if (!v) { showToast('请先在左侧上传视频或粘贴链接'); return; }
+  }
+  if (state.src === 'stream') {
+    var v = document.querySelector('#inputStream input').value.trim();
+    if (!v) { showToast('请先在左侧填入直播流地址'); return; }
+  }
+
+  experienceStarted = true;
+
+  // 按钮进入"体验中"灰白态
+  var btn = document.getElementById('tryBtn');
+  btn.disabled = true;
+  document.getElementById('tryBtnText').textContent = '体验中…';
+
+  // 隐藏空态、显示 loading 后刷画面
+  document.getElementById('empty').classList.add('hide');
+  var loading = document.getElementById('loading');
+  document.getElementById('loadingMsg').textContent = '正在识别画面……';
+  loading.classList.remove('hide');
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(function(){
+    document.getElementById('loadingMsg').textContent = '正在应用动漫风格……';
+  }, 1000);
+  setTimeout(function(){
+    applyContent();
+    loading.classList.add('hide');
+    // 倒计时重置并开始
+    resetAndStartCountdown();
+  }, 2200);
+}
+
+function resetAndStartCountdown(){
+  clearInterval(cdTimer);
+  remain = 180;
   document.getElementById('countdown').textContent = remain + 's';
   cdTimer = setInterval(function(){
     remain--;
     if (remain <= 0){
       clearInterval(cdTimer);
       remain = 0;
-      showToast('体验时长已用完，想在直播中使用请开通实时重绘');
+      showToast('本次体验时长已用完，可切换参数后再次体验');
     }
     document.getElementById('countdown').textContent = remain + 's';
   }, 1000);
 }
-startCountdown();
 
-/* ============ 底部动作 ============ */
-function goActivate(){ location.href = 'domain-advanced-config.html'; }
-function downloadClip(){ showToast('体验片段已开始下载（原型占位）'); }
+/* 初始态：右侧显示空态，倒计时显示 180s 灰字 */
+document.getElementById('empty').classList.remove('hide');
+document.getElementById('emptyMsg').textContent = '选好左侧的素材和风格，点击「免费体验」查看重绘效果';
 
 var toastTimer;
 function showToast(msg){
