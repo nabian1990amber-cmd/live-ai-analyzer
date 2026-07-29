@@ -569,7 +569,7 @@ function render() {
       '<td>'+esc(s.delay)+'</td>' +
       '<td style="color:var(--text-2)">'+esc(s.startTime)+'</td>' +
       '<td><div class="row-op">' +
-        '<a href="#">预览</a>' +
+        '<a href="live-stream-preview.html?stream='+encodeURIComponent(s.streamName)+'&app='+encodeURIComponent(s.app)+'">预览</a>' +
         '<a href="#">流管理</a>' +
         '<a href="#">断流</a>' +
         '<a href="#">禁用</a>' +

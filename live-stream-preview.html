@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>流预览 | 流管理 - 腾讯云直播控制台</title>
+<style>
+  :root {
+    --brand: #0052D9;
+    --brand-hover: #366EF4;
+    --brand-light: #ECF2FE;
+    --brand-soft: rgba(0, 82, 217, 0.06);
+    --text-1: #1D2129;
+    --text-2: #4E5969;
+    --text-3: #86909C;
+    --text-4: #C9CDD4;
+    --border: #E5E6EB;
+    --border-light: #F0F1F3;
+    --bg-page: #F7F8FA;
+    --sidebar-w: 220px;
+    --header-h: 52px;
+    --radius: 10px;
+    font-family: "PingFang SC", -apple-system, "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg-page); color: var(--text-1);
+    font-size: 13px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; position: relative;
+  }
+  body::before {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(58% 100% at 14% 0%, rgba(0,82,217,0.10) 0, transparent 60%),
+      radial-gradient(55% 100% at 86% 6%, rgba(107,91,210,0.09) 0, transparent 58%),
+      radial-gradient(46% 92% at 52% 0%, rgba(43,164,113,0.05) 0, transparent 62%);
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* 顶栏 */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+    background: rgba(255,255,255,0.82); backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; margin-right: 28px; }
+  .logo .mark {
+    width: 22px; height: 22px; background: var(--brand); border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .logo .name { color: var(--text-2); font-size: 13px; }
+  .topnav { display: flex; align-items: center; gap: 4px; }
+  .topnav a {
+    padding: 6px 12px; border-radius: 6px; color: var(--text-2);
+    font-size: 13px; transition: background .15s, color .15s;
+  }
+  .topnav a:hover { background: var(--bg-page); color: var(--text-1); }
+  .topnav a.active { color: var(--brand); font-weight: 500; }
+  .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; color: var(--text-2); cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--bg-page); color: var(--brand); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .user-chip {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #FFC58F, #FF9D5C);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 600; margin-left: 8px;
+  }
+
+  /* 侧栏 */
+  .sidebar {
+    position: fixed; left: 0; top: var(--header-h); bottom: 0;
+    width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 12px 0;
+  }
+  .menu-group-title {
+    padding: 8px 20px; font-size: 11px; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 20px; font-size: 13px; color: var(--text-2);
+    cursor: pointer; transition: background .12s, color .12s; position: relative;
+  }
+  .menu-item:hover { background: var(--bg-page); color: var(--text-1); }
+  .menu-item.active { color: var(--brand); background: var(--brand-soft); font-weight: 500; }
+  .menu-item.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--brand);
+  }
+  .menu-item .ic { width: 16px; height: 16px; flex-shrink: 0; }
+  .menu-item .ic svg { width: 16px; height: 16px; }
+  .menu-item .new-badge {
+    margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: linear-gradient(135deg, #4A9EFF, #7B5CFF); color: #fff; font-weight: 500;
+  }
+
+  /* 主区 */
+  .main {
+    margin-left: var(--sidebar-w); margin-top: var(--header-h);
+    padding: 20px 24px 40px; position: relative;
+  }
+  .main-inner {
+    max-width: 1400px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+
+  /* 面包屑 */
+  .crumb-wrap {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 12px; font-size: 13px; color: var(--text-2);
+  }
+  .crumb-wrap .back {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 8px; border-radius: 6px; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .crumb-wrap .back:hover { background: rgba(0,82,217,0.06); color: var(--brand); }
+  .crumb-wrap .stream-name {
+    color: var(--text-1); font-weight: 500; margin-left: 4px;
+    font-size: 15px;
+  }
+  .crumb-wrap .app-tag {
+    margin-left: 8px; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    background: var(--brand-soft); color: var(--brand);
+  }
+
+  /* 布局：左视频区 + 右侧面板 */
+  .layout {
+    display: grid; grid-template-columns: 1fr 320px; gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* 播放器卡片 */
+  .player-card {
+    background: #fff; border-radius: 10px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .player-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #1a1a2e;
+    overflow: hidden;
+  }
+
+  /* 三 tab（叠在画面左上） */
+  .stream-tabs {
+    position: absolute; top: 12px; left: 12px;
+    z-index: 20;
+    display: inline-flex; gap: 4px;
+    padding: 4px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+  }
+  .stream-tab {
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .stream-tab:hover { color: #fff; }
+  .stream-tab.active {
+    background: #fff; color: var(--text-1); font-weight: 500;
+  }
+  .stream-tab.locked::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: #F7BA1E; margin-right: 2px;
+  }
+
+  /* 右上小 badge（LIVE / 延时秒数） */
+  .stream-badge {
+    position: absolute; top: 12px; right: 12px;
+    padding: 3px 9px; border-radius: 4px;
+    font-size: 11px; color: #fff;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    z-index: 20;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .stream-badge.live { background: rgba(245,63,63,0.9); }
+  .stream-badge.live::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: #fff; animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  /* 视频画面 mock */
+  .scene {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scene.online {
+    background:
+      radial-gradient(circle at 50% 60%, rgba(255,255,255,0.06), transparent 50%),
+      linear-gradient(180deg, #2a4a2a 0%, #1a3520 60%, #0d2010 100%);
+  }
+  .scene.delay {
+    background:
+      radial-gradient(circle at 50% 60%, rgba(255,255,255,0.04), transparent 50%),
+      linear-gradient(180deg, #2a4a2a 0%, #1a3520 60%, #0d2010 100%);
+    filter: brightness(0.85) saturate(0.85);
+  }
+  .scene.restyle-on {
+    background:
+      radial-gradient(circle at 40% 40%, rgba(255,154,158,0.4), transparent 50%),
+      radial-gradient(circle at 70% 60%, rgba(123,92,255,0.5), transparent 55%),
+      linear-gradient(135deg, #2d1b69 0%, #0f0c29 50%, #1a237e 100%);
+  }
+  .scene .figure {
+    color: rgba(255,255,255,0.9);
+    z-index: 2;
+    text-align: center;
+  }
+  .scene .figure svg { width: 60%; max-width: 320px; }
+  .scene .caption {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+    padding: 3px 10px; border-radius: 3px;
+  }
+
+  /* 重绘流未开通蒙层：纯白 */
+  .restyle-mask {
+    position: absolute; inset: 0; z-index: 15;
+    background: #FFFFFF;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px;
+  }
+  .restyle-mask.hide { display: none; }
+  .restyle-mask h3 {
+    font-size: 16px; font-weight: 500; color: var(--text-1);
+    margin-bottom: 10px;
+  }
+  .restyle-mask p {
+    font-size: 13px; color: var(--text-2); line-height: 1.7;
+    max-width: 480px; text-align: center; margin-bottom: 20px;
+  }
+  .restyle-mask p .accent {
+    color: var(--brand); font-weight: 500;
+  }
+  .restyle-mask .btn-open {
+    height: 36px; padding: 0 22px; border-radius: 6px;
+    background: var(--brand); color: #fff;
+    border: none; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background .15s;
+  }
+  .restyle-mask .btn-open:hover { background: var(--brand-hover); }
+
+  /* 播放器控制栏 */
+  .player-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: #fff;
+    border-top: 1px solid var(--border-light);
+  }
+  .btn-shot {
+    height: 28px; padding: 0 14px; border-radius: 4px;
+    background: #F53F3F; color: #fff;
+    border: none; font-size: 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-shot:hover { background: #E43C3C; }
+  .link-history {
+    font-size: 12.5px; color: var(--brand); cursor: pointer;
+  }
+  .link-history:hover { color: var(--brand-hover); }
+
+  /* 右侧面板 */
+  .side-panel {
+    background: #fff; border-radius: 10px;
+    border: 1px solid var(--border-light);
+    padding: 14px 16px;
+    height: fit-content;
+  }
+  .side-tabs {
+    display: flex; gap: 18px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 8px; margin-bottom: 16px;
+  }
+  .side-tabs .st {
+    font-size: 13px; color: var(--text-2); cursor: pointer;
+    padding: 4px 0; position: relative;
+  }
+  .side-tabs .st.active { color: var(--brand); font-weight: 500; }
+  .side-tabs .st.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -9px;
+    height: 2px; background: var(--brand); border-radius: 2px;
+  }
+  .empty-state {
+    padding: 40px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .empty-state svg {
+    width: 60px; height: 60px; color: var(--text-4); margin-bottom: 8px;
+  }
+  .empty-state .msg { font-size: 12px; color: var(--text-3); }
+
+  /* 底部高光切片 */
+  .highlight-card {
+    background: #fff; border-radius: 10px;
+    border: 1px solid var(--border-light);
+    padding: 16px 20px;
+  }
+  .highlight-title {
+    font-size: 14px; font-weight: 500; color: var(--text-1);
+    margin-bottom: 10px;
+  }
+
+  /* ============ 开通弹窗（从 live-stream-manage.html 复用样式，无已开通区块） ============ */
+  .modal-mask {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+  }
+  .modal-mask.show { display: flex; opacity: 1; }
+  .modal-box {
+    background: #fff; border-radius: 12px;
+    width: 560px; max-width: 92vw;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    animation: modalIn .25s ease;
+  }
+  @keyframes modalIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    padding: 16px 22px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header h3 { font-size: 15px; font-weight: 500; color: var(--text-1); }
+  .modal-close {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text-3); font-size: 22px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { color: var(--text-1); background: var(--bg-page); }
+  .modal-body { padding: 20px 22px 6px; }
+  .info-row {
+    display: flex; align-items: center; margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .info-row .info-label { color: var(--text-3); width: 88px; flex-shrink: 0; }
+  .info-row .info-val { color: var(--text-1); font-weight: 500; }
+  .ds-label {
+    font-size: 13px; color: var(--text-1); font-weight: 500;
+    margin-bottom: 10px; margin-top: 6px;
+  }
+  .ds-label .req { color: #F53F3F; margin-left: 3px; }
+  .domain-check-list {
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 200px; overflow-y: auto;
+    padding: 4px 0;
+  }
+  .domain-check {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 6px;
+    border: 1px solid var(--border-light);
+    cursor: pointer; transition: all .12s;
+  }
+  .domain-check:hover { border-color: rgba(0,82,217,0.4); background: rgba(0,82,217,0.02); }
+  .domain-check.checked {
+    border-color: var(--brand);
+    background: var(--brand-light);
+  }
+  .domain-check input[type="checkbox"] {
+    accent-color: var(--brand); width: 16px; height: 16px;
+  }
+  .dc-name { font-size: 13px; color: var(--text-1); }
+  .ds-hint {
+    font-size: 12px; color: var(--text-3);
+    margin-top: 10px; line-height: 1.65;
+  }
+  .ds-hint code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px; padding: 1px 5px; border-radius: 3px;
+    background: var(--brand-light); color: var(--brand);
+  }
+  .modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 22px 20px;
+  }
+  .btn-modal {
+    height: 34px; padding: 0 20px; border-radius: 6px;
+    font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center;
+    transition: all .15s;
+  }
+  .btn-modal.ghost {
+    background: #fff; border: 1px solid var(--border);
+    color: var(--text-1);
+  }
+  .btn-modal.ghost:hover { border-color: var(--brand); color: var(--brand); }
+  .btn-modal.primary {
+    background: var(--brand); color: #fff; border: 1px solid var(--brand);
+    font-weight: 500;
+  }
+  .btn-modal.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+
+  /* Toast */
+  .toast {
+    position: fixed; right: 24px; top: calc(var(--header-h) + 16px);
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 12px 16px;
+    font-size: 13px; color: var(--text-1); max-width: 420px; z-index: 300;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    transform: translateY(-8px);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast .t-ic {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    background: #2BA471; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; margin-top: 1px;
+  }
+
+  .fade { opacity: 0; transform: translateY(12px); animation: fadeUp .5s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<header class="topbar">
+  <div class="logo">
+    <div class="mark">云</div>
+    <span class="name">腾讯云</span>
+  </div>
+  <nav class="topnav">
+    <a href="#">概览</a>
+    <a href="#" class="active">云直播</a>
+    <a href="#">云点播</a>
+    <a href="#">媒体处理</a>
+    <a href="#">对象存储</a>
+    <a href="#">CDN</a>
+  </nav>
+  <div class="right">
+    <div class="icon-btn" title="搜索">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="user-chip">刘</div>
+  </div>
+</header>
+
+<!-- 侧栏 -->
+<aside class="sidebar">
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+    概览
+  </div>
+  <div class="menu-item" onclick="location.href='domain-advanced-config.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    域名管理
+  </div>
+  <div class="menu-item active" onclick="location.href='live-stream-manage.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+    流管理
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+    资源包/插件管理
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">直播+</div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg></span>
+    功能配置
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+    快捷操控
+  </div>
+  <div class="menu-group-title" style="padding-left:20px;font-size:11px">AI 智能</div>
+  <div class="menu-item" onclick="location.href='live-ai-analyzer.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg></span>
+    智能解析
+  </div>
+  <div class="menu-item" onclick="location.href='live-restyle-experience.html'">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg></span>
+    实时重绘
+    <span class="new-badge">New</span>
+  </div>
+  <div class="menu-item">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+    统计分析
+  </div>
+</aside>
+
+<!-- 主区 -->
+<main class="main">
+  <div class="main-inner">
+
+    <!-- 面包屑 -->
+    <div class="crumb-wrap fade">
+      <div class="back" onclick="location.href='live-stream-manage.html'">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        流管理
+      </div>
+      <span>/</span>
+      <span class="stream-name" id="crumbStream">live-001</span>
+      <span class="app-tag" id="crumbApp">AppName: live</span>
+    </div>
+
+    <!-- 布局 -->
+    <div class="layout fade" style="animation-delay:.08s">
+
+      <!-- 左侧播放器 -->
+      <div class="player-card">
+        <div class="player-stage" id="stage">
+
+          <!-- 三个 tab 叠在画面左上 -->
+          <div class="stream-tabs">
+            <div class="stream-tab active" data-tab="online" onclick="switchTab('online')">在线流</div>
+            <div class="stream-tab" data-tab="delay" onclick="switchTab('delay')">延时流</div>
+            <div class="stream-tab locked" id="tabRestyle" data-tab="restyle" onclick="switchTab('restyle')">重绘流</div>
+          </div>
+
+          <!-- 右上 badge -->
+          <div class="stream-badge" id="streamBadge">LIVE</div>
+
+          <!-- 在线流画面 -->
+          <div class="scene online" id="sceneOnline" style="display:flex">
+            <div class="figure">
+              <svg viewBox="0 0 200 120" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- 足球场纹 -->
+                <line x1="100" y1="15" x2="100" y2="105"/>
+                <circle cx="100" cy="60" r="14"/>
+                <rect x="15" y="35" width="20" height="50"/>
+                <rect x="165" y="35" width="20" height="50"/>
+                <!-- 球员们 -->
+                <circle cx="70" cy="45" r="4"/>
+                <circle cx="130" cy="70" r="4"/>
+                <circle cx="90" cy="80" r="4"/>
+                <circle cx="150" cy="40" r="4"/>
+              </svg>
+            </div>
+            <div class="caption">在线流 · 直播中</div>
+          </div>
+
+          <!-- 延时流画面 -->
+          <div class="scene delay" id="sceneDelay" style="display:none">
+            <div class="figure">
+              <svg viewBox="0 0 200 120" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="100" y1="15" x2="100" y2="105"/>
+                <circle cx="100" cy="60" r="14"/>
+                <rect x="15" y="35" width="20" height="50"/>
+                <rect x="165" y="35" width="20" height="50"/>
+                <circle cx="65" cy="42" r="4"/>
+                <circle cx="125" cy="72" r="4"/>
+                <circle cx="88" cy="78" r="4"/>
+                <circle cx="148" cy="38" r="4"/>
+              </svg>
+            </div>
+            <div class="caption">延时流 · 相对在线流延后 60s</div>
+          </div>
+
+          <!-- 重绘流画面（开通后） -->
+          <div class="scene restyle-on" id="sceneRestyleOn" style="display:none">
+            <div class="figure">
+              <svg viewBox="0 0 200 120" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="100" y1="15" x2="100" y2="105"/>
+                <circle cx="100" cy="60" r="16"/>
+                <rect x="15" y="33" width="20" height="54" rx="2"/>
+                <rect x="165" y="33" width="20" height="54" rx="2"/>
+                <circle cx="70" cy="45" r="5"/>
+                <circle cx="130" cy="70" r="5"/>
+                <circle cx="90" cy="80" r="5"/>
+                <circle cx="150" cy="40" r="5"/>
+              </svg>
+            </div>
+            <div class="caption">重绘流 · 动漫风格</div>
+          </div>
+
+          <!-- 重绘流未开通蒙层：纯白 + 说明 + 开通按钮 -->
+          <div class="restyle-mask" id="restyleMask" style="display:none">
+            <h3>实时重绘功能未开通</h3>
+            <p>
+              开通后即可将当前直播流实时转换为 <span class="accent">动漫等风格</span> 输出。
+              <br />
+              该能力按拉流用量单独计费，具体价格请查看 <span class="accent">产品定价</span>。
+            </p>
+            <button class="btn-open" onclick="openActivateModal()">
+              立即开通
+            </button>
+          </div>
+        </div>
+
+        <!-- 播放器控制条 -->
+        <div class="player-controls">
+          <button class="btn-shot">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            开始截图
+          </button>
+          <a class="link-history">查看历史录像</a>
+        </div>
+      </div>
+
+      <!-- 右侧面板 -->
+      <div class="side-panel">
+        <div class="side-tabs">
+          <div class="st active">大图</div>
+          <div class="st">转码测试</div>
+        </div>
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div class="msg">暂无数据</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 高光切片 -->
+    <div class="highlight-card fade" style="animation-delay:.14s">
+      <div class="highlight-title">高光切片</div>
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <div class="msg">暂无数据</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ============ 开通实时重绘 弹窗（复用 live-stream-manage.html 结构，无已开通区块） ============ -->
+<div class="modal-mask" id="restyleModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>实时重绘配置</h3>
+      <button class="modal-close" onclick="closeActivateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-row"><span class="info-label">StreamName：</span><span class="info-val" id="rsStreamName">live-001</span></div>
+      <div class="info-row"><span class="info-label">AppName：</span><span class="info-val" id="rsApp">live</span></div>
+
+      <div class="ds-label">选择播放域名 <span class="req">*</span></div>
+      <div class="domain-check-list" id="domainCheckList"></div>
+      <div class="ds-hint">
+        请为对应 StreamName、AppName 选择开启实时重绘的播放域名。开启后，对应播放域名拉流时携带参数 <code>txFeature=Restyle</code> 即可拉到重绘后的流。信息将同步至 域名管理 › 高级配置 › 实时重绘。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal ghost" onclick="closeActivateModal()">取消</button>
+      <button class="btn-modal primary" onclick="confirmActivate()">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="t-ic">✓</div>
+  <div class="t-body" id="toastBody"></div>
+</div>
+
+<script>
+/* ============ 参数解析 ============ */
+function getQuery(k){
+  var m = new RegExp('[?&]' + k + '=([^&]*)').exec(location.search);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+var streamName = getQuery('stream') || 'live-001';
+var appName = getQuery('app') || 'live';
+document.getElementById('crumbStream').textContent = streamName;
+document.getElementById('crumbApp').textContent = 'AppName: ' + appName;
+document.getElementById('rsStreamName').textContent = streamName;
+document.getElementById('rsApp').textContent = appName;
+
+/* ============ Tab 切换 ============ */
+var restyleActivated = false;
+
+function switchTab(key){
+  document.querySelectorAll('.stream-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.tab === key);
+  });
+  document.getElementById('sceneOnline').style.display = (key === 'online') ? 'flex' : 'none';
+  document.getElementById('sceneDelay').style.display = (key === 'delay') ? 'flex' : 'none';
+  document.getElementById('sceneRestyleOn').style.display = (key === 'restyle' && restyleActivated) ? 'flex' : 'none';
+  document.getElementById('restyleMask').style.display = (key === 'restyle' && !restyleActivated) ? 'flex' : 'none';
+
+  // 右上 badge
+  var badge = document.getElementById('streamBadge');
+  if (key === 'online') { badge.textContent = 'LIVE'; badge.className = 'stream-badge live'; badge.style.display = 'inline-flex'; }
+  else if (key === 'delay') { badge.textContent = '延时 60s'; badge.className = 'stream-badge'; badge.style.display = 'inline-flex'; }
+  else if (key === 'restyle') {
+    if (restyleActivated) { badge.textContent = '动漫风格'; badge.className = 'stream-badge'; badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
+  }
+}
+
+/* ============ 开通弹窗 ============ */
+var playDomains = [
+  { name: 'live-0001.liveplay.myqcloud.com' },
+  { name: 'live-0002.liveplay.myqcloud.com' },
+  { name: 'play.mydomain.com' }
+];
+
+function openActivateModal(){
+  var listEl = document.getElementById('domainCheckList');
+  listEl.innerHTML = playDomains.map(function(d, i){
+    return '<label class="domain-check" data-idx="'+i+'">' +
+      '<input type="checkbox" value="'+d.name+'" onchange="onDomainCheck(this)">' +
+      '<span class="dc-name">'+d.name+'</span>' +
+    '</label>';
+  }).join('');
+  document.getElementById('restyleModal').classList.add('show');
+}
+function onDomainCheck(cb){ cb.parentElement.classList.toggle('checked', cb.checked); }
+function closeActivateModal(){ document.getElementById('restyleModal').classList.remove('show'); }
+
+function confirmActivate(){
+  var checked = document.querySelectorAll('#domainCheckList input:checked');
+  if (!checked.length) { showToast('请至少选择一个播放域名'); return; }
+  var names = Array.from(checked).map(function(c){ return c.value; });
+  closeActivateModal();
+  restyleActivated = true;
+  // 移除 locked 视觉
+  document.getElementById('tabRestyle').classList.remove('locked');
+  // 切到重绘 tab
+  switchTab('restyle');
+  showToast('已为「'+streamName+'」在 '+names.length+' 个播放域名开通实时重绘。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
+}
+
+var toastTimer;
+function showToast(msg){
+  var t = document.getElementById('toast');
+  document.getElementById('toastBody').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3600);
+}
+</script>
+</body>
+</html>
