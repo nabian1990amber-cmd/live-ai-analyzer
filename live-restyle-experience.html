@@ -267,17 +267,13 @@
     border: 1px solid var(--border); border-radius: 6px;
     background: #fff; font-size: 13px; color: var(--text-1);
     display: flex; align-items: center;
-    cursor: pointer;
+    cursor: pointer; position: relative;
     transition: border-color .15s;
   }
   .select-input:hover { border-color: var(--brand); }
   .select-input .caret {
     position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
     color: var(--text-3); width: 14px; height: 14px; pointer-events: none;
-  }
-  .select-input .flag {
-    width: 16px; height: 12px; border-radius: 2px;
-    margin-right: 8px; overflow: hidden; flex-shrink: 0;
   }
   .select-menu {
     position: absolute; top: calc(100% + 4px); left: 0; right: 0;
@@ -293,6 +289,61 @@
   }
   .select-menu .opt:hover { background: var(--bg-page); }
   .select-menu .opt.active { color: var(--brand); background: var(--brand-light); }
+
+  /* 本地开播：摄像头 + 麦克风 两个设备下拉 */
+  .device-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    max-width: 720px;
+  }
+  .device-select { position: relative; }
+  .device-select .select-input {
+    padding: 0 34px 0 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .device-select .dev-ic {
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--brand); flex-shrink: 0;
+  }
+  .device-select .dev-ic svg { width: 15px; height: 15px; }
+  .device-select .dev-lbl {
+    font-size: 13px; color: var(--text-1); flex-shrink: 0;
+  }
+  .device-select .dev-divider {
+    width: 1px; height: 14px; background: var(--border);
+    flex-shrink: 0;
+  }
+  .device-select .dev-val {
+    font-size: 13px; color: var(--text-3);
+    flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* 本地视频：上传按钮 */
+  .upload-btn {
+    height: 36px; padding: 0 16px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; color: var(--text-1);
+    font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: border-color .15s, color .15s;
+    font-family: inherit;
+  }
+  .upload-btn:hover { border-color: var(--brand); color: var(--brand); }
+  .upload-btn svg { width: 14px; height: 14px; }
+  .input-hint {
+    margin-top: 6px; font-size: 11.5px; color: var(--text-3);
+  }
+
+  /* 拉取直播流：拉流地址输入框（满宽） */
+  .url-input {
+    width: 100%; height: 36px;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 0 12px; font-size: 13px; color: var(--text-1);
+    background: #fff; font-family: inherit;
+    transition: border-color .15s;
+  }
+  .url-input:focus { outline: none; border-color: var(--brand); }
+  .url-input::placeholder { color: var(--text-4); }
 
   /* 底部 CTA */
   .cta-wrap {
@@ -499,8 +550,8 @@
         </div>
       </div>
 
-      <!-- Demo 素材下拉（仅 Demo 输入类型时显示） -->
-      <div class="cfg-row" id="rowDemoMaterial">
+      <!-- Demo 视频 → Demo 素材下拉 -->
+      <div class="cfg-row row-demo" id="rowDemoMaterial">
         <div class="lbl">Demo 素材</div>
         <div class="val">
           <div class="select-wrap">
@@ -516,12 +567,60 @@
         </div>
       </div>
 
-      <!-- 输入源（上传/直播流时显示） -->
-      <div class="cfg-row" id="rowInput" style="display:none">
+      <!-- 本地开播 → 摄像头 + 麦克风 -->
+      <div class="cfg-row row-local" id="rowLocal" style="display:none">
         <div class="lbl">输入源</div>
         <div class="val">
-          <input id="inputSource" type="text" style="width:100%;max-width:420px;height:36px;border:1px solid var(--border);border-radius:6px;padding:0 12px;font-size:13px;color:var(--text-1);background:#fff;font-family:inherit" placeholder="" />
-          <div style="margin-top:6px;font-size:11.5px;color:var(--text-3)" id="inputHint">仅用于体验预览</div>
+          <div class="device-row">
+            <div class="device-select">
+              <div class="select-input" onclick="toggleDeviceMenu(event,'camMenu')">
+                <span class="dev-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                </span>
+                <span class="dev-lbl">摄像头</span>
+                <span class="dev-divider"></span>
+                <span class="dev-val">未检测到摄像头</span>
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="select-menu" id="camMenu">
+                <div class="opt">未检测到摄像头</div>
+              </div>
+            </div>
+            <div class="device-select">
+              <div class="select-input" onclick="toggleDeviceMenu(event,'micMenu')">
+                <span class="dev-ic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                </span>
+                <span class="dev-lbl">麦克风</span>
+                <span class="dev-divider"></span>
+                <span class="dev-val">未检测到麦克风</span>
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="select-menu" id="micMenu">
+                <div class="opt">未检测到麦克风</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 本地视频 → 选择本地文件 按钮 -->
+      <div class="cfg-row row-upload" id="rowUpload" style="display:none">
+        <div class="lbl">输入源</div>
+        <div class="val">
+          <button class="upload-btn" onclick="pickLocalFile()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span id="uploadLbl">选择本地文件</span>
+          </button>
+          <div class="input-hint">支持 mp4，≤ 50MB，仅用于体验预览</div>
+        </div>
+      </div>
+
+      <!-- 拉取直播流 → 拉流地址输入框 -->
+      <div class="cfg-row row-stream" id="rowStream" style="display:none">
+        <div class="lbl">拉流地址</div>
+        <div class="val">
+          <input id="streamUrl" type="text" class="url-input" placeholder="请输入直播拉流地址，支持 RTMP、FLV、HLS 协议" />
         </div>
       </div>
 
@@ -549,29 +648,32 @@ function pickSrc(el, key){
   document.querySelectorAll('.tab-item').forEach(function(t){ t.classList.remove('active'); });
   el.classList.add('active');
   state.src = key;
-  var rowDemo = document.getElementById('rowDemoMaterial');
-  var rowInput = document.getElementById('rowInput');
-  var input = document.getElementById('inputSource');
-  var hint = document.getElementById('inputHint');
-  if (key === 'demo') {
-    rowDemo.style.display = 'flex';
-    rowInput.style.display = 'none';
-  } else if (key === 'local') {
-    rowDemo.style.display = 'none';
-    rowInput.style.display = 'flex';
-    input.placeholder = '本地开播需在客户端通过 SDK 推流，此处填入推流地址即可预览';
-    hint.textContent = '如：rtmp://push.mydomain.com/live/stream_key';
-  } else if (key === 'upload') {
-    rowDemo.style.display = 'none';
-    rowInput.style.display = 'flex';
-    input.placeholder = '点击选择本地视频，或粘贴 mp4 直链';
-    hint.textContent = '支持 mp4，≤ 50MB，仅用于体验预览';
-  } else if (key === 'stream') {
-    rowDemo.style.display = 'none';
-    rowInput.style.display = 'flex';
-    input.placeholder = 'rtmp:// 或 https://.../live.flv';
-    hint.textContent = '需要公网可访问的直播流地址';
-  }
+  // 隐藏全部输入行
+  document.getElementById('rowDemoMaterial').style.display = 'none';
+  document.getElementById('rowLocal').style.display = 'none';
+  document.getElementById('rowUpload').style.display = 'none';
+  document.getElementById('rowStream').style.display = 'none';
+  // 显示对应
+  if (key === 'demo') document.getElementById('rowDemoMaterial').style.display = 'flex';
+  else if (key === 'local') document.getElementById('rowLocal').style.display = 'flex';
+  else if (key === 'upload') document.getElementById('rowUpload').style.display = 'flex';
+  else if (key === 'stream') document.getElementById('rowStream').style.display = 'flex';
+}
+
+function toggleDeviceMenu(e, id){
+  e.stopPropagation();
+  var menu = document.getElementById(id);
+  document.querySelectorAll('.select-menu').forEach(function(m){
+    if (m !== menu) m.classList.remove('show');
+  });
+  menu.classList.toggle('show');
+}
+
+function pickLocalFile(){
+  // 原型占位：模拟文件选择
+  var lbl = document.getElementById('uploadLbl');
+  lbl.textContent = 'sample-live.mp4';
+  showToast('已选择本地文件（原型占位）');
 }
 
 function pickStyle(el, key){
@@ -593,13 +695,20 @@ function pickDemo(el, key, label){
   document.getElementById('demoMenu').classList.remove('show');
 }
 document.addEventListener('click', function(){
-  document.getElementById('demoMenu').classList.remove('show');
+  document.querySelectorAll('.select-menu').forEach(function(m){ m.classList.remove('show'); });
 });
 
 function startExperience(){
-  if (state.src !== 'demo') {
-    var v = document.getElementById('inputSource').value.trim();
-    if (!v) { showToast('请先填入输入源内容'); return; }
+  if (state.src === 'stream') {
+    var v = document.getElementById('streamUrl').value.trim();
+    if (!v) { showToast('请输入直播拉流地址'); return; }
+  }
+  if (state.src === 'upload') {
+    var lbl = document.getElementById('uploadLbl').textContent;
+    if (lbl === '选择本地文件') { showToast('请先选择本地视频文件'); return; }
+  }
+  if (state.src === 'local') {
+    // 本地开播原型：直接放行
   }
   var params = 'src=' + state.src + '&style=' + state.style + '&demo=' + state.demo;
   location.href = 'live-restyle-preview.html?' + params;
