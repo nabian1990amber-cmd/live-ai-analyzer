@@ -19,7 +19,6 @@
     --border: #E5E6EB;
     --border-light: #F0F1F3;
     --bg-page: #F7F8FA;
-    --bg-card: #FFFFFF;
     --sidebar-w: 220px;
     --header-h: 52px;
     --radius: 10px;
@@ -31,8 +30,7 @@
   body {
     background: var(--bg-page);
     color: var(--text-1);
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 13px; line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     position: relative;
   }
@@ -47,7 +45,7 @@
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: #DCDFE6; border-radius: 4px; }
 
-  /* ============ 顶栏 ============ */
+  /* ========= 顶栏 ========= */
   .topbar {
     position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
     background: rgba(255,255,255,0.82); backdrop-filter: saturate(180%) blur(12px);
@@ -82,7 +80,7 @@
     color: #fff; font-size: 12px; font-weight: 600; margin-left: 8px;
   }
 
-  /* ============ 侧栏 ============ */
+  /* ========= 侧栏 ========= */
   .sidebar {
     position: fixed; left: 0; top: var(--header-h); bottom: 0;
     width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--border);
@@ -111,361 +109,215 @@
     color: #fff; font-weight: 500; letter-spacing: 0.3px;
   }
 
-  /* ============ 主区 ============ */
+  /* ========= 主区 ========= */
   .main {
     margin-left: var(--sidebar-w); margin-top: var(--header-h);
     min-height: calc(100vh - var(--header-h));
-    padding: 24px 24px 32px;
+    padding: 22px 24px 40px;
     position: relative;
-    background: transparent;
   }
   .main-inner {
-    max-width: 1280px; margin: 0 auto;
+    max-width: 1080px; margin: 0 auto;
     position: relative; z-index: 1;
   }
 
-  /* 页头 */
-  .page-header { margin-bottom: 16px; }
-  .page-header h1 {
-    font-size: 20px; font-weight: 500; color: var(--text-1);
-    display: flex; align-items: center; gap: 10px;
+  /* 顶部标题+右上缩略 */
+  .head-wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px;
   }
-  .page-header h1 .spark { width: 18px; height: 18px; color: #7B5CFF; }
-  .page-header .subtitle {
-    margin-top: 4px; font-size: 12.5px; color: var(--text-3);
+  .head-titles h1 {
+    font-size: 22px; font-weight: 500; color: var(--text-1);
+    display: inline-flex; align-items: center; gap: 10px;
   }
-
-  /* ========= 主卡片：左右布局 ========= */
-  .workbench {
-    background: #fff; border-radius: 12px;
-    border: 1px solid var(--border-light);
-    display: grid; grid-template-columns: 320px 1fr;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    min-height: 560px;
+  .head-titles h1 .spark { width: 20px; height: 20px; color: #7B5CFF; }
+  .head-titles .sub {
+    margin-top: 6px; font-size: 12.5px; color: var(--text-3);
   }
-
-  /* ---------- 左侧配置 ---------- */
-  .left-panel {
-    padding: 20px 20px 18px;
-    border-right: 1px solid var(--border-light);
-    display: flex; flex-direction: column;
+  /* 右上示意缩略 */
+  .demo-preview {
+    width: 260px; height: 76px;
+    border-radius: 10px; overflow: hidden;
+    display: grid; grid-template-columns: 1fr 1fr;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    position: relative;
+    flex-shrink: 0;
   }
-  .cfg-block { margin-bottom: 18px; }
-  .cfg-label {
-    font-size: 12.5px; color: var(--text-1); font-weight: 500;
-    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
-  }
-  .cfg-label .bar { width: 3px; height: 12px; background: var(--brand); border-radius: 2px; }
-
-  /* 素材来源 tab */
-  .src-tabs {
-    display: flex; gap: 6px; margin-bottom: 10px;
-  }
-  .src-tab {
-    flex: 1; height: 30px; padding: 0 10px;
-    border: 1px solid var(--border); border-radius: 15px;
-    background: #fff; color: var(--text-2); font-size: 12.5px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
-    transition: all .15s;
-  }
-  .src-tab:hover { border-color: var(--brand); color: var(--brand); }
-  .src-tab.active {
-    background: var(--brand-light); border-color: var(--brand);
-    color: var(--brand); font-weight: 500;
-  }
-  .src-tab svg { width: 12px; height: 12px; }
-
-  /* Demo 缩略卡（2 张） */
-  .demo-list { display: none; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .demo-list.show { display: grid; }
-  .demo-thumb {
-    aspect-ratio: 16 / 10; border-radius: 6px; overflow: hidden;
-    position: relative; cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color .15s;
-  }
-  .demo-thumb:hover { border-color: rgba(0,82,217,0.4); }
-  .demo-thumb.active { border-color: var(--brand); }
-  .demo-thumb .cover {
-    position: absolute; inset: 0;
+  .demo-preview::before {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,0.85); z-index: 5;
     display: flex; align-items: center; justify-content: center;
   }
-  .demo-thumb .cover.ecom {
+  .demo-preview::after {
+    content: ''; position: absolute; top: 50%; left: calc(50% + 3px);
+    transform: translate(-50%, -50%);
+    width: 0; height: 0;
+    border-left: 8px solid var(--brand);
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    z-index: 6;
+  }
+  .demo-preview .half {
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 6px; font-size: 10px; color: #fff; font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .demo-preview .half.orig {
+    background: linear-gradient(135deg, #4A6FE8 0%, #2d3748 100%);
+  }
+  .demo-preview .half.styl {
     background:
-      radial-gradient(circle at 30% 40%, rgba(255,255,255,0.2), transparent 45%),
-      linear-gradient(135deg, #4A6FE8 0%, #6B5BD2 100%);
+      radial-gradient(circle at 30% 40%, rgba(255,255,255,0.25), transparent 40%),
+      linear-gradient(135deg, #7B5CFF 0%, #2d1b69 100%);
   }
-  .demo-thumb .cover.show {
-    background:
-      radial-gradient(circle at 65% 35%, rgba(255,255,255,0.25), transparent 45%),
-      linear-gradient(135deg, #E85A9E 0%, #7B5BD2 100%);
+  .demo-preview .split-line {
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    width: 2px; background: rgba(255,255,255,0.9);
+    z-index: 4;
   }
-  .demo-thumb .cover svg { width: 22px; height: 22px; color: #fff; opacity: 0.85; }
-  .demo-thumb .cover-text {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    padding: 4px 8px 5px;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%);
-    color: #fff; font-size: 11px; font-weight: 500;
-  }
-  .demo-thumb .live {
-    position: absolute; top: 5px; left: 5px;
-    padding: 1px 5px; border-radius: 2px;
-    background: #F53F3F; color: #fff; font-size: 9px; font-weight: 500;
-    display: flex; align-items: center; gap: 3px;
-  }
-  .demo-thumb .live::before {
-    content: ''; width: 4px; height: 4px; border-radius: 50%;
-    background: #fff; animation: blink 1.2s infinite;
-  }
-  @keyframes blink { 50% { opacity: 0.3; } }
-  .demo-thumb.active::after {
-    content: ''; position: absolute; top: 5px; right: 5px;
-    width: 16px; height: 16px; border-radius: 50%; background: var(--brand);
-    color: #fff; font-size: 12px; text-align: center; line-height: 16px;
-  }
-  .demo-thumb.active::after { content: '✓'; }
 
-  /* 上传/拉流输入区 */
-  .src-input { display: none; }
-  .src-input.show { display: block; }
-  .src-input input {
-    width: 100%; height: 34px;
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 0 12px; font-size: 12.5px; color: var(--text-1);
-    background: #fff; transition: border-color .15s;
-    font-family: inherit;
-  }
-  .src-input input:focus { outline: none; border-color: var(--brand); }
-  .src-input .hint {
-    margin-top: 5px; font-size: 11px; color: var(--text-3);
-    display: flex; align-items: center; gap: 4px;
-  }
-  .src-input .hint svg { flex-shrink: 0; }
-
-  /* 风格 radio */
-  .style-list { display: flex; flex-direction: column; gap: 6px; }
-  .style-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 10px; border-radius: 6px;
+  /* ========= 主卡片 ========= */
+  .cfg-card {
+    background: #fff; border-radius: 14px;
     border: 1px solid var(--border-light);
-    cursor: pointer; font-size: 12.5px; color: var(--text-1);
-    transition: all .12s;
+    padding: 28px 36px 32px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
   }
-  .style-item:hover { border-color: rgba(0,82,217,0.4); background: rgba(0,82,217,0.02); }
-  .style-item.active {
+
+  /* 每一行 */
+  .cfg-row {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--border-light);
+  }
+  .cfg-row:last-of-type { border-bottom: none; }
+  .cfg-row .lbl {
+    width: 80px; flex-shrink: 0; text-align: right;
+    font-size: 13px; color: var(--text-2);
+    padding-top: 8px;
+  }
+  .cfg-row .val { flex: 1; }
+
+  /* tab 组 */
+  .tab-group {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .tab-item {
+    height: 40px; border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: #fff; color: var(--text-2);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 13px; cursor: pointer;
+    transition: all .15s;
+  }
+  .tab-item:hover { border-color: var(--brand); color: var(--brand); }
+  .tab-item.active {
     border-color: var(--brand); background: var(--brand-light);
     color: var(--brand); font-weight: 500;
   }
-  .style-item.disabled {
-    color: var(--text-4); cursor: not-allowed;
-    background: transparent; border-style: dashed;
+  .tab-item svg { width: 13px; height: 13px; }
+
+  /* 风格模式卡 */
+  .style-group {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 240px)); gap: 14px;
   }
-  .style-item.disabled:hover { border-color: var(--border); background: transparent; }
-  .style-item .r-dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 1.5px solid var(--text-4);
+  .style-card {
+    border-radius: 10px; overflow: hidden;
+    cursor: pointer; position: relative;
+    border: 2px solid transparent;
+    transition: border-color .15s, transform .15s;
+  }
+  .style-card:not(.disabled):hover { transform: translateY(-2px); }
+  .style-card.active { border-color: var(--brand); }
+  .style-card.disabled { cursor: not-allowed; opacity: 0.6; }
+  .style-card .thumb {
+    aspect-ratio: 16 / 9;
+    position: relative;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    color: #fff; font-size: 12px;
   }
-  .style-item.active .r-dot { border-color: var(--brand); }
-  .style-item.active .r-dot::after {
-    content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--brand);
+  .style-card .thumb.anime {
+    background:
+      radial-gradient(circle at 30% 40%, rgba(255,255,255,0.3), transparent 45%),
+      linear-gradient(135deg, #7B5CFF 0%, #2d1b69 60%, #4A9EFF 100%);
   }
-  .style-item .r-tag {
-    margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 8px;
+  .style-card .thumb.ink {
+    background: linear-gradient(135deg, #B8BAC0 0%, #6D7075 100%);
+  }
+  .style-card .thumb .figure {
+    color: rgba(255,255,255,0.95);
+  }
+  .style-card .thumb .figure svg { width: 40px; height: 40px; }
+  .style-card .name {
+    padding: 8px 12px; background: #fff;
+    font-size: 12.5px; color: var(--text-1); font-weight: 500;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .style-card.active .name { color: var(--brand); }
+  .style-card .name .tag {
+    font-size: 10px; padding: 1px 6px; border-radius: 8px;
     background: #F5F5F5; color: var(--text-3);
   }
 
-  /* 左侧免费体验按钮 */
-  .try-btn {
-    width: 100%; height: 42px;
+  /* 下拉框 */
+  .select-wrap {
+    position: relative; max-width: 320px;
+  }
+  .select-input {
+    height: 36px; padding: 0 34px 0 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; font-size: 13px; color: var(--text-1);
+    display: flex; align-items: center;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .select-input:hover { border-color: var(--brand); }
+  .select-input .caret {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-3); width: 14px; height: 14px; pointer-events: none;
+  }
+  .select-input .flag {
+    width: 16px; height: 12px; border-radius: 2px;
+    margin-right: 8px; overflow: hidden; flex-shrink: 0;
+  }
+  .select-menu {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 20;
+    padding: 4px; display: none;
+  }
+  .select-menu.show { display: block; }
+  .select-menu .opt {
+    padding: 7px 10px; border-radius: 4px; font-size: 13px;
+    cursor: pointer; color: var(--text-1);
+    display: flex; align-items: center;
+  }
+  .select-menu .opt:hover { background: var(--bg-page); }
+  .select-menu .opt.active { color: var(--brand); background: var(--brand-light); }
+
+  /* 底部 CTA */
+  .cta-wrap {
+    display: flex; justify-content: center;
+    padding: 8px 0 4px; margin-top: 16px;
+  }
+  .btn-cta {
+    height: 40px; padding: 0 40px;
     border: none; border-radius: 8px;
     background: linear-gradient(135deg, #4A9EFF 0%, #7B5CFF 100%);
     color: #fff; font-size: 14px; font-weight: 500;
     cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    transition: box-shadow .2s, transform .1s, background .2s;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: box-shadow .2s, transform .1s;
     box-shadow: 0 3px 10px rgba(74,158,255,0.25);
   }
-  .try-btn:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(74,158,255,0.4); }
-  .try-btn:active:not(:disabled) { transform: translateY(1px); }
-  .try-btn:disabled {
+  .btn-cta:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(74,158,255,0.4); }
+  .btn-cta:active:not(:disabled) { transform: translateY(1px); }
+  .btn-cta:disabled {
     background: #F2F3F5; color: var(--text-4);
     cursor: not-allowed; box-shadow: none;
   }
-  .try-btn:disabled svg { color: var(--text-4); }
-
-  /* ---------- 右侧效果区 ---------- */
-  .right-panel {
-    padding: 18px 20px 18px;
-    display: flex; flex-direction: column;
-    background: linear-gradient(180deg, #FAFBFC 0%, #F7F8FA 100%);
-  }
-  .rp-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .rp-tags { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-2); }
-  .rp-tags .tag { display: flex; align-items: center; gap: 5px; }
-  .rp-tags .tag .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .rp-tags .tag .dot.blue { background: #4A9EFF; }
-  .rp-tags .tag .dot.purple { background: #7B5CFF; }
-  .rp-tags .tag strong { color: var(--text-1); font-weight: 500; }
-  .rp-countdown {
-    display: flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 12px;
-    background: rgba(123,92,255,0.10);
-    color: #6B4BD2; font-size: 11.5px; font-weight: 500;
-  }
-  .rp-countdown svg { flex-shrink: 0; }
-  .rp-countdown span { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-
-  /* 对比舞台 */
-  .compare-stage {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    border-radius: 10px; overflow: hidden;
-    background: #0f0c29;
-    user-select: none; touch-action: none;
-    box-shadow: 0 4px 20px rgba(15,12,41,0.15);
-  }
-  .canvas-layer {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .canvas-layer.original {
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-  }
-  .canvas-layer.restyled {
-    background: linear-gradient(135deg, #2d1b69 0%, #0f0c29 60%, #1a237e 100%);
-    clip-path: inset(0 0 0 50%);
-  }
-  .mock-figure {
-    text-align: center; color: rgba(255,255,255,0.9); z-index: 2;
-  }
-  .mock-figure svg { width: 88px; height: 88px; }
-  .mock-figure .cap { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.7); }
-
-  .canvas-badge {
-    position: absolute; top: 12px;
-    padding: 3px 9px; border-radius: 10px;
-    font-size: 11px; color: #fff; font-weight: 500;
-    display: flex; align-items: center; gap: 5px;
-    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
-    z-index: 5;
-  }
-  .canvas-badge.left { left: 10px; }
-  .canvas-badge.right { right: 10px; }
-  .canvas-badge .dot { width: 5px; height: 5px; border-radius: 50%; }
-  .canvas-badge .dot.blue { background: #4A9EFF; }
-  .canvas-badge .dot.purple { background: #7B5CFF; }
-
-  .divider {
-    position: absolute; top: 0; bottom: 0; width: 3px;
-    left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,0.92);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 0 12px rgba(255,255,255,0.4);
-    cursor: ew-resize; z-index: 8;
-  }
-  .divider-handle {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 36px; height: 36px; border-radius: 50%;
-    background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-2); cursor: ew-resize;
-  }
-  .divider-handle svg { width: 18px; height: 18px; }
-
-  /* Loading */
-  .loading-overlay {
-    position: absolute; inset: 0; z-index: 10;
-    background: rgba(15,12,41,0.85); backdrop-filter: blur(6px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: #fff; border-radius: 10px;
-  }
-  .loading-overlay.hide { display: none; }
-  .loading-overlay .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid rgba(255,255,255,0.2);
-    border-top-color: #fff;
-    border-radius: 50%; animation: spin 0.9s linear infinite;
-    margin-bottom: 14px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-overlay .msg { font-size: 13.5px; margin-bottom: 3px; }
-  .loading-overlay .sub { font-size: 11.5px; color: rgba(255,255,255,0.6); }
-
-  /* 空态（上传/拉流未输入时） */
-  .empty-overlay {
-    position: absolute; inset: 0; z-index: 10;
-    background: rgba(255,255,255,0.95); backdrop-filter: blur(4px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: var(--text-2); border-radius: 10px;
-  }
-  .empty-overlay.hide { display: none; }
-  .empty-overlay svg { width: 48px; height: 48px; color: var(--text-4); margin-bottom: 12px; }
-  .empty-overlay .msg { font-size: 13px; color: var(--text-2); }
-
-  /* 视频占位控制条 */
-  .video-controls {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 4px 0;
-    color: var(--text-2); font-size: 11.5px;
-  }
-  .video-controls .play {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--brand); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; flex-shrink: 0;
-  }
-  .video-controls .play::after {
-    content: ''; width: 0; height: 0;
-    border-left: 7px solid #fff;
-    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
-    margin-left: 2px;
-  }
-  .video-controls .track {
-    flex: 1; height: 4px; background: var(--border);
-    border-radius: 2px; position: relative;
-  }
-  .video-controls .track .prog {
-    position: absolute; top: 0; bottom: 0; left: 0;
-    width: 32%; background: var(--brand); border-radius: 2px;
-  }
-  .video-controls .track .prog::after {
-    content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
-    width: 10px; height: 10px; border-radius: 50%; background: var(--brand);
-    box-shadow: 0 0 0 3px rgba(0,82,217,0.15);
-  }
-  .video-controls .time {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-3);
-  }
-
-  /* 右下底部说明条 */
-  .action-row {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-top: 14px; gap: 18px; flex-wrap: wrap;
-  }
-  .drag-hint {
-    font-size: 11.5px; color: var(--text-3);
-    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-    padding-top: 2px;
-  }
-  .drag-hint svg { color: var(--text-4); }
-  .prod-note {
-    font-size: 11.5px; color: var(--text-3);
-    display: flex; align-items: center; gap: 5px;
-    flex-wrap: wrap; line-height: 1.6;
-    text-align: right; justify-content: flex-end;
-  }
-  .prod-note svg { color: var(--text-4); flex-shrink: 0; }
-  .prod-note a {
-    color: var(--brand); font-weight: 500;
-    margin: 0 3px;
-  }
-  .prod-note a:hover { text-decoration: underline; }
+  .btn-cta svg { width: 14px; height: 14px; }
 
   /* Toast */
   .toast {
@@ -568,189 +420,122 @@
 <!-- ============ 主区 ============ -->
 <main class="main">
   <div class="main-inner">
-    <!-- 页头 -->
-    <div class="page-header fade">
-      <h1>
-        AI 实时风格重绘
-        <svg class="spark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
-        快速体验
-      </h1>
-      <div class="subtitle">选一段素材、拖动分割线，即刻对比原视频与重绘后画面。无需开通</div>
+
+    <!-- 标题 + 右上示意 -->
+    <div class="head-wrap fade">
+      <div class="head-titles">
+        <h1>
+          AI 实时风格重绘
+          <svg class="spark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+          快速体验
+        </h1>
+        <div class="sub">一键将直播画面转换为动漫等风格，无需开通即可预览效果</div>
+      </div>
+      <div class="demo-preview">
+        <div class="half orig">原视频</div>
+        <div class="half styl">动漫风格</div>
+        <div class="split-line"></div>
+      </div>
     </div>
 
-    <!-- 主卡片 -->
-    <section class="workbench fade" style="animation-delay:.08s">
+    <!-- 主配置卡 -->
+    <section class="cfg-card fade" style="animation-delay:.08s">
 
-      <!-- 左侧配置 -->
-      <div class="left-panel">
-        <!-- 素材来源 -->
-        <div class="cfg-block">
-          <div class="cfg-label"><span class="bar"></span>选择素材</div>
-          <div class="src-tabs">
-            <div class="src-tab active" data-src="demo" onclick="pickSrcTab(this,'demo')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-              Demo
+      <!-- 输入类型 -->
+      <div class="cfg-row">
+        <div class="lbl">输入类型</div>
+        <div class="val">
+          <div class="tab-group">
+            <div class="tab-item" data-src="local" onclick="pickSrc(this,'local')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><polygon points="22 8 16 12 22 16 22 8"/></svg>
+              本地开播
             </div>
-            <div class="src-tab" data-src="upload" onclick="pickSrcTab(this,'upload')">
+            <div class="tab-item" data-src="upload" onclick="pickSrc(this,'upload')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              上传
+              本地视频
             </div>
-            <div class="src-tab" data-src="stream" onclick="pickSrcTab(this,'stream')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></svg>
-              拉流
+            <div class="tab-item" data-src="stream" onclick="pickSrc(this,'stream')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              拉取直播流
             </div>
-          </div>
-
-          <!-- Demo 缩略卡（2 张） -->
-          <div class="demo-list show" id="demoList">
-            <div class="demo-thumb active" data-demo="ecom" onclick="pickDemo(this,'ecom')">
-              <div class="cover ecom">
-                <div class="live">LIVE</div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </div>
-              <div class="cover-text">电商带货直播</div>
+            <div class="tab-item active" data-src="demo" onclick="pickSrc(this,'demo')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Demo 视频
             </div>
-            <div class="demo-thumb" data-demo="show" onclick="pickDemo(this,'show')">
-              <div class="cover show">
-                <div class="live">LIVE</div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </div>
-              <div class="cover-text">秀场直播</div>
-            </div>
-          </div>
-
-          <!-- 上传输入 -->
-          <div class="src-input" id="inputUpload">
-            <input type="text" placeholder="点击选择本地视频或粘贴 mp4 直链" />
-            <div class="hint">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              支持 mp4，≤ 50MB，仅用于体验预览
-            </div>
-          </div>
-          <!-- 拉流输入 -->
-          <div class="src-input" id="inputStream">
-            <input type="text" placeholder="rtmp:// 或 https://.../live.flv" />
-            <div class="hint">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              需要公网可访问的直播流地址
-            </div>
-          </div>
-        </div>
-
-        <!-- 风格 -->
-        <div class="cfg-block">
-          <div class="cfg-label"><span class="bar"></span>重绘风格</div>
-          <div class="style-list">
-            <div class="style-item active" data-style="anime" onclick="pickStyle(this)">
-              <span class="r-dot"></span>动漫风格
-            </div>
-            <div class="style-item disabled">
-              <span class="r-dot"></span>水墨风格<span class="r-tag">敬请期待</span>
-            </div>
-            <div class="style-item disabled">
-              <span class="r-dot"></span>赛博朋克<span class="r-tag">敬请期待</span>
-            </div>
-            <div class="style-item disabled">
-              <span class="r-dot"></span>油画风格<span class="r-tag">敬请期待</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 免费体验主 CTA -->
-        <div style="margin-top:auto; padding-top:16px;">
-          <button class="try-btn" id="tryBtn" onclick="startExperience()">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
-            <span id="tryBtnText">免费体验</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 右侧效果 -->
-      <div class="right-panel">
-        <div class="rp-header">
-          <div class="rp-tags">
-            <div class="tag"><span class="dot blue"></span>左侧 <strong>原视频</strong></div>
-            <div class="tag"><span class="dot purple"></span>右侧 <strong id="styleLabel">动漫风格</strong></div>
-          </div>
-          <div class="rp-countdown">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            剩余体验时长 <span id="countdown">180s</span>
-          </div>
-        </div>
-
-        <div class="compare-stage" id="stage">
-          <!-- 原视频层 -->
-          <div class="canvas-layer original" id="canvasOriginal">
-            <div class="mock-figure">
-              <svg id="figOriginal" viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="50" cy="36" r="15"/>
-                <path d="M22 90 Q22 60 50 60 Q78 60 78 90"/>
-              </svg>
-              <div class="cap" id="capOriginal">电商带货 · 原视频</div>
-            </div>
-          </div>
-          <!-- 重绘层 -->
-          <div class="canvas-layer restyled" id="canvasRestyled">
-            <div class="mock-figure">
-              <svg id="figRestyled" viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.95)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="50" cy="34" r="17"/>
-                <path d="M20 90 Q20 58 50 58 Q80 58 80 90"/>
-                <circle cx="43" cy="32" r="2.5" fill="rgba(255,255,255,0.98)"/>
-                <circle cx="57" cy="32" r="2.5" fill="rgba(255,255,255,0.98)"/>
-                <path d="M43 44 Q50 48 57 44" />
-                <path d="M34 21 L42 26 M66 26 L58 21" stroke-width="1.8"/>
-              </svg>
-              <div class="cap" id="capRestyled">电商带货 · 动漫风格</div>
-            </div>
-          </div>
-          <!-- 角标 -->
-          <div class="canvas-badge left"><span class="dot blue"></span>原视频</div>
-          <div class="canvas-badge right"><span class="dot purple"></span><span id="badgeStyle">动漫风格</span></div>
-          <!-- 分割线 -->
-          <div class="divider" id="divider">
-            <div class="divider-handle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 6 3 12 9 18"/>
-                <polyline points="15 6 21 12 15 18"/>
-              </svg>
-            </div>
-          </div>
-          <!-- Loading -->
-          <div class="loading-overlay hide" id="loading">
-            <div class="spinner"></div>
-            <div class="msg" id="loadingMsg">正在切换素材……</div>
-            <div class="sub">预渲染中，约 1 秒</div>
-          </div>
-          <!-- 空态（上传/拉流未输入） -->
-          <div class="empty-overlay hide" id="empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <div class="msg" id="emptyMsg">请在左侧填入内容后自动预览</div>
-          </div>
-        </div>
-
-        <!-- 视频占位控制条 -->
-        <div class="video-controls">
-          <div class="play"></div>
-          <div class="track"><div class="prog"></div></div>
-          <div class="time">00:12 / 00:38</div>
-        </div>
-
-        <!-- 底部说明 -->
-        <div class="action-row">
-          <div class="drag-hint">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 3 12 9 18"/><polyline points="15 6 21 12 15 18"/></svg>
-            拖动分割线对比 · 双击回到中间
-          </div>
-          <div class="prod-note">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            当前页面仅供效果体验，如需商用请前往
-            <a href="domain-advanced-config.html">域名管理 › 高级配置 › 实时重绘</a>
-            配置后使用
           </div>
         </div>
       </div>
 
+      <!-- 重绘风格 -->
+      <div class="cfg-row">
+        <div class="lbl">重绘风格</div>
+        <div class="val">
+          <div class="style-group">
+            <div class="style-card active" data-style="anime" onclick="pickStyle(this,'anime')">
+              <div class="thumb anime">
+                <div class="figure">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="50" cy="34" r="17"/>
+                    <path d="M20 90 Q20 58 50 58 Q80 58 80 90"/>
+                    <circle cx="43" cy="32" r="2.5" fill="rgba(255,255,255,0.98)"/>
+                    <circle cx="57" cy="32" r="2.5" fill="rgba(255,255,255,0.98)"/>
+                    <path d="M43 44 Q50 48 57 44" />
+                    <path d="M34 21 L42 26 M66 26 L58 21" stroke-width="1.8"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="name">动漫风格</div>
+            </div>
+            <div class="style-card disabled" data-style="ink">
+              <div class="thumb ink">
+                <div class="figure">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="50" cy="36" r="15"/>
+                    <path d="M22 90 Q22 60 50 60 Q78 60 78 90"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="name">水墨风格<span class="tag">敬请期待</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo 素材下拉（仅 Demo 输入类型时显示） -->
+      <div class="cfg-row" id="rowDemoMaterial">
+        <div class="lbl">Demo 素材</div>
+        <div class="val">
+          <div class="select-wrap">
+            <div class="select-input" onclick="toggleDemoMenu(event)">
+              <span id="demoValue">电商带货直播</span>
+              <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="select-menu" id="demoMenu">
+              <div class="opt active" data-demo="ecom" onclick="pickDemo(this,'ecom','电商带货直播')">电商带货直播</div>
+              <div class="opt" data-demo="show" onclick="pickDemo(this,'show','秀场直播')">秀场直播</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入源（上传/直播流时显示） -->
+      <div class="cfg-row" id="rowInput" style="display:none">
+        <div class="lbl">输入源</div>
+        <div class="val">
+          <input id="inputSource" type="text" style="width:100%;max-width:420px;height:36px;border:1px solid var(--border);border-radius:6px;padding:0 12px;font-size:13px;color:var(--text-1);background:#fff;font-family:inherit" placeholder="" />
+          <div style="margin-top:6px;font-size:11.5px;color:var(--text-3)" id="inputHint">仅用于体验预览</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-wrap">
+        <button class="btn-cta" id="tryBtn" onclick="startExperience()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8 5.8 21.3l2.4-7.4L2 9.4h7.6z"/></svg>
+          免费体验
+        </button>
+      </div>
     </section>
+
   </div>
 </main>
 
@@ -760,168 +545,67 @@
 </div>
 
 <script>
-/* ============ 状态 ============ */
-var state = {
-  src: 'demo',
-  demo: 'ecom',
-  style: 'anime'
-};
+var state = { src: 'demo', style: 'anime', demo: 'ecom' };
 
-var styleLabelMap = { anime: '动漫风格' };
-
-var demoContent = {
-  ecom: {
-    origColor: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
-    stylColor: 'linear-gradient(135deg, #2d1b69 0%, #0f0c29 60%, #1a237e 100%)',
-    origCap: '电商带货 · 原视频',
-    stylCap: '电商带货 · 动漫风格'
-  },
-  show: {
-    origColor: 'linear-gradient(135deg, #4a2c4a 0%, #2c1a2c 100%)',
-    stylColor: 'linear-gradient(135deg, #6b2e5d 0%, #1a1440 60%, #4a237e 100%)',
-    origCap: '秀场直播 · 原视频',
-    stylCap: '秀场直播 · 动漫风格'
-  }
-};
-
-/* ============ 素材 tab ============ */
-function pickSrcTab(el, key){
-  document.querySelectorAll('.src-tab').forEach(function(t){ t.classList.remove('active'); });
+function pickSrc(el, key){
+  document.querySelectorAll('.tab-item').forEach(function(t){ t.classList.remove('active'); });
   el.classList.add('active');
   state.src = key;
-
-  document.getElementById('demoList').classList.toggle('show', key === 'demo');
-  document.getElementById('inputUpload').classList.toggle('show', key === 'upload');
-  document.getElementById('inputStream').classList.toggle('show', key === 'stream');
-
-  markParamsChanged();
+  var rowDemo = document.getElementById('rowDemoMaterial');
+  var rowInput = document.getElementById('rowInput');
+  var input = document.getElementById('inputSource');
+  var hint = document.getElementById('inputHint');
+  if (key === 'demo') {
+    rowDemo.style.display = 'flex';
+    rowInput.style.display = 'none';
+  } else if (key === 'local') {
+    rowDemo.style.display = 'none';
+    rowInput.style.display = 'flex';
+    input.placeholder = '本地开播需在客户端通过 SDK 推流，此处填入推流地址即可预览';
+    hint.textContent = '如：rtmp://push.mydomain.com/live/stream_key';
+  } else if (key === 'upload') {
+    rowDemo.style.display = 'none';
+    rowInput.style.display = 'flex';
+    input.placeholder = '点击选择本地视频，或粘贴 mp4 直链';
+    hint.textContent = '支持 mp4，≤ 50MB，仅用于体验预览';
+  } else if (key === 'stream') {
+    rowDemo.style.display = 'none';
+    rowInput.style.display = 'flex';
+    input.placeholder = 'rtmp:// 或 https://.../live.flv';
+    hint.textContent = '需要公网可访问的直播流地址';
+  }
 }
 
-/* ============ Demo 切换 ============ */
-function pickDemo(el, key){
-  document.querySelectorAll('.demo-thumb').forEach(function(t){ t.classList.remove('active'); });
+function pickStyle(el, key){
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('.style-card').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  state.style = key;
+}
+
+function toggleDemoMenu(e){
+  e.stopPropagation();
+  document.getElementById('demoMenu').classList.toggle('show');
+}
+function pickDemo(el, key, label){
+  document.querySelectorAll('#demoMenu .opt').forEach(function(o){ o.classList.remove('active'); });
   el.classList.add('active');
   state.demo = key;
-  markParamsChanged();
+  document.getElementById('demoValue').textContent = label;
+  document.getElementById('demoMenu').classList.remove('show');
 }
-
-/* ============ 风格切换 ============ */
-function pickStyle(el){
-  if (el.classList.contains('disabled')) return;
-  document.querySelectorAll('.style-item').forEach(function(c){ c.classList.remove('active'); });
-  el.classList.add('active');
-  state.style = el.dataset.style;
-  var lbl = styleLabelMap[state.style] || '动漫风格';
-  document.getElementById('styleLabel').textContent = lbl;
-  document.getElementById('badgeStyle').textContent = lbl;
-  markParamsChanged();
-}
-
-/* ============ 应用画面（切素材/风格用） ============ */
-function applyContent(){
-  var c = demoContent[state.demo];
-  if (!c) return;
-  document.getElementById('canvasOriginal').style.background = c.origColor;
-  document.getElementById('canvasRestyled').style.background = c.stylColor;
-  document.getElementById('capOriginal').textContent = c.origCap;
-  document.getElementById('capRestyled').textContent = c.stylCap;
-}
-
-/* ============ 按钮态：参数改变时"重新体验"变蓝可点 ============ */
-function markParamsChanged(){
-  // 只在已经体验过（正在体验中或已结束）后，才提示"重新体验"
-  if (experienceStarted) {
-    var btn = document.getElementById('tryBtn');
-    btn.disabled = false;
-    document.getElementById('tryBtnText').textContent = '重新体验';
-  }
-}
-
-/* ============ 分割线拖动 ============ */
-var divider = document.getElementById('divider');
-var restyled = document.getElementById('canvasRestyled');
-var stage = document.getElementById('stage');
-var dragging = false;
-
-function updatePos(clientX){
-  var rect = stage.getBoundingClientRect();
-  var x = clientX - rect.left;
-  var pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
-  divider.style.left = pct + '%';
-  restyled.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
-}
-divider.addEventListener('mousedown', function(e){ dragging = true; e.preventDefault(); });
-document.addEventListener('mousemove', function(e){ if (dragging) updatePos(e.clientX); });
-document.addEventListener('mouseup', function(){ dragging = false; });
-divider.addEventListener('touchstart', function(e){ dragging = true; e.preventDefault(); }, { passive: false });
-document.addEventListener('touchmove', function(e){
-  if (dragging && e.touches[0]) updatePos(e.touches[0].clientX);
-}, { passive: false });
-document.addEventListener('touchend', function(){ dragging = false; });
-stage.addEventListener('dblclick', function(){
-  divider.style.left = '50%';
-  restyled.style.clipPath = 'inset(0 0 0 50%)';
+document.addEventListener('click', function(){
+  document.getElementById('demoMenu').classList.remove('show');
 });
 
-/* ============ 免费体验触发 ============ */
-var experienceStarted = false;
-var remain = 180;
-var cdTimer;
-var refreshTimer;
-
 function startExperience(){
-  // 上传/拉流的话，需要用户先填内容
-  if (state.src === 'upload') {
-    var v = document.querySelector('#inputUpload input').value.trim();
-    if (!v) { showToast('请先在左侧上传视频或粘贴链接'); return; }
+  if (state.src !== 'demo') {
+    var v = document.getElementById('inputSource').value.trim();
+    if (!v) { showToast('请先填入输入源内容'); return; }
   }
-  if (state.src === 'stream') {
-    var v = document.querySelector('#inputStream input').value.trim();
-    if (!v) { showToast('请先在左侧填入直播流地址'); return; }
-  }
-
-  experienceStarted = true;
-
-  // 按钮进入"体验中"灰白态
-  var btn = document.getElementById('tryBtn');
-  btn.disabled = true;
-  document.getElementById('tryBtnText').textContent = '体验中…';
-
-  // 隐藏空态、显示 loading 后刷画面
-  document.getElementById('empty').classList.add('hide');
-  var loading = document.getElementById('loading');
-  document.getElementById('loadingMsg').textContent = '正在识别画面……';
-  loading.classList.remove('hide');
-  clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(function(){
-    document.getElementById('loadingMsg').textContent = '正在应用动漫风格……';
-  }, 1000);
-  setTimeout(function(){
-    applyContent();
-    loading.classList.add('hide');
-    // 倒计时重置并开始
-    resetAndStartCountdown();
-  }, 2200);
+  var params = 'src=' + state.src + '&style=' + state.style + '&demo=' + state.demo;
+  location.href = 'live-restyle-preview.html?' + params;
 }
-
-function resetAndStartCountdown(){
-  clearInterval(cdTimer);
-  remain = 180;
-  document.getElementById('countdown').textContent = remain + 's';
-  cdTimer = setInterval(function(){
-    remain--;
-    if (remain <= 0){
-      clearInterval(cdTimer);
-      remain = 0;
-      showToast('本次体验时长已用完，可切换参数后再次体验');
-    }
-    document.getElementById('countdown').textContent = remain + 's';
-  }, 1000);
-}
-
-/* 初始态：右侧显示空态，倒计时显示 180s 灰字 */
-document.getElementById('empty').classList.remove('hide');
-document.getElementById('emptyMsg').textContent = '选好左侧的素材和风格，点击「免费体验」查看重绘效果';
 
 var toastTimer;
 function showToast(msg){
@@ -929,7 +613,7 @@ function showToast(msg){
   document.getElementById('toastBody').textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
 }
 </script>
 </body>
