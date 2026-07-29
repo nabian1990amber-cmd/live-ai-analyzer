@@ -368,6 +368,30 @@
   }
   .btn-cta svg { width: 14px; height: 14px; }
 
+  /* 页尾提示 */
+  .footer-note {
+    margin-top: 18px;
+    padding: 12px 18px;
+    background: var(--brand-soft);
+    border: 1px solid rgba(0,82,217,0.12);
+    border-radius: 8px;
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: var(--text-2); line-height: 1.65;
+  }
+  .footer-note svg { color: var(--brand); flex-shrink: 0; margin-top: 3px; }
+  .footer-note a {
+    color: var(--brand); font-weight: 500;
+    margin: 0 2px;
+  }
+  .footer-note a:hover { text-decoration: underline; }
+  .footer-note code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    padding: 1px 6px; border-radius: 3px;
+    background: #fff; color: var(--brand);
+    margin: 0 2px;
+  }
+
   /* Toast */
   .toast {
     position: fixed; right: 24px; top: calc(var(--header-h) + 16px);
@@ -550,23 +574,6 @@
         </div>
       </div>
 
-      <!-- Demo 视频 → Demo 素材下拉 -->
-      <div class="cfg-row row-demo" id="rowDemoMaterial">
-        <div class="lbl">Demo 素材</div>
-        <div class="val">
-          <div class="select-wrap">
-            <div class="select-input" onclick="toggleDemoMenu(event)">
-              <span id="demoValue">电商带货直播</span>
-              <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="select-menu" id="demoMenu">
-              <div class="opt active" data-demo="ecom" onclick="pickDemo(this,'ecom','电商带货直播')">电商带货直播</div>
-              <div class="opt" data-demo="show" onclick="pickDemo(this,'show','秀场直播')">秀场直播</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- 本地开播 → 摄像头 + 麦克风 -->
       <div class="cfg-row row-local" id="rowLocal" style="display:none">
         <div class="lbl">输入源</div>
@@ -633,6 +640,12 @@
       </div>
     </section>
 
+    <!-- 页尾提示 -->
+    <div class="footer-note fade" style="animation-delay:.15s">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>当前页面仅供效果体验。正式使用需前往 <a href="domain-advanced-config.html">域名管理 › 高级配置 › 实时重绘</a> 为播放域名开通，并在拉流地址中携带参数 <code>txFeature=Restyle</code> 方可生效。</span>
+    </div>
+
   </div>
 </main>
 
@@ -649,13 +662,11 @@ function pickSrc(el, key){
   el.classList.add('active');
   state.src = key;
   // 隐藏全部输入行
-  document.getElementById('rowDemoMaterial').style.display = 'none';
   document.getElementById('rowLocal').style.display = 'none';
   document.getElementById('rowUpload').style.display = 'none';
   document.getElementById('rowStream').style.display = 'none';
-  // 显示对应
-  if (key === 'demo') document.getElementById('rowDemoMaterial').style.display = 'flex';
-  else if (key === 'local') document.getElementById('rowLocal').style.display = 'flex';
+  // Demo 视频 tab 不展示任何额外行
+  if (key === 'local') document.getElementById('rowLocal').style.display = 'flex';
   else if (key === 'upload') document.getElementById('rowUpload').style.display = 'flex';
   else if (key === 'stream') document.getElementById('rowStream').style.display = 'flex';
 }
