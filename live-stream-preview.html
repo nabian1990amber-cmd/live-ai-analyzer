@@ -389,6 +389,20 @@
     font-size: 11.5px; padding: 2px 10px; border-radius: 10px;
     color: var(--text-3); background: #F5F6F8;
   }
+  /* 极速高清状态：灰字 / 蓝链 */
+  .teshd-state {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 12px; color: var(--text-3);
+  }
+  .teshd-link {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 12px; color: var(--brand); font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+  }
+  .teshd-link:hover { color: var(--brand-hover); text-decoration: underline; }
+  /* 已开通实时重绘的播放域名区 */
+  .opened-area { margin-top: 4px; }
+  .opened-empty { font-size: 12px; color: var(--text-3); }
   /* 域名行内嵌模板下拉（缩小版） */
   .row-tpl {
     position: relative;
@@ -733,8 +747,14 @@
         <span>
           实时重绘功能在秀场直播、竖屏直播等场景使用效果更佳，必须配合极速高清转码功能一起使用才能生效。
           <br />
-          请选择要开通实时重绘的播放域名；已开通的域名不可取消。
+          已开通的播放域名不可取消；未配置极速高清时可在域名行快速配置。
         </span>
+      </div>
+
+      <!-- 已开通实时重绘的播放域名 -->
+      <div class="opened-area" id="openedArea" style="display:none">
+        <div class="ds-label">已开通实时重绘的播放域名</div>
+        <div class="domain-check-list" id="openedDomainList"></div>
       </div>
 
       <div class="ds-label">选择播放域名 <span class="req">*</span></div>
@@ -743,8 +763,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn-modal ghost" onclick="closeActivateModal()">取消</button>
-      <button class="btn-modal ghost" id="btnOnlyOpen" onclick="confirmActivate('only')">仅开通</button>
-      <button class="btn-modal primary" id="btnOpenWithTeshd" onclick="confirmActivate('withTeshd')" style="display:none">开通并配置极速高清</button>
+      <button class="btn-modal primary" onclick="confirmActivate()">确认</button>
     </div>
   </div>
 </div>
@@ -798,39 +817,66 @@ var playDomains = [
 
 /* ========== 开通弹窗 ========== */
 
+/* 域名行的极速高清状态展示：已配置=灰色文字，未配置=蓝色链接 */
+function teshdStateHtml(d){
+  if (d.hasTeshd) {
+    return '<span class="teshd-state">已开通极速高清</span>';
+  }
+  return '<a class="teshd-link" href="javascript:void(0)" onclick="quickConfigTeshd(\''+d.name+'\')">快速配置极速高清</a>';
+}
+
 function openActivateModal(){
+  // 已开通实时重绘的播放域名（预览页初始为空，演示"已开通"态可手工将 playDomains 标记 opened）
+  var opened = getOpenedDomains();
+  var openedArea = document.getElementById('openedArea');
+  var openedListEl = document.getElementById('openedDomainList');
+
+  if (opened.length) {
+    openedArea.style.display = '';
+    openedListEl.innerHTML = opened.map(function(name){
+      var d = playDomains.filter(function(p){ return p.name === name; })[0] || { name: name, hasTeshd: false };
+      return '<div class="domain-check opened-row checked">' +
+        '<input type="checkbox" value="'+d.name+'" checked disabled>' +
+        '<span class="dc-name" title="'+d.name+'">'+d.name+'</span>' +
+        teshdStateHtml(d) +
+      '</div>';
+    }).join('');
+  } else {
+    openedArea.style.display = 'none';
+  }
+
+  var unopenedDomains = playDomains.filter(function(d){ return opened.indexOf(d.name) < 0; });
   var listEl = document.getElementById('domainCheckList');
-  listEl.innerHTML = playDomains.map(function(d){
-    return '<div class="domain-check">' +
-      '<input type="checkbox" value="'+d.name+'" onchange="onDomainCheck(this)">' +
-      '<span class="dc-name" title="'+d.name+'">'+d.name+'</span>' +
-      '<span class="teshd-tag '+(d.hasTeshd?'yes':'no')+'">极速高清：'+(d.hasTeshd?'是':'否')+'</span>' +
-    '</div>';
-  }).join('');
-  updateTeshdBtn();
+  if (!unopenedDomains.length) {
+    listEl.innerHTML = '<span class="opened-empty">所有可用播放域名均已开通</span>';
+  } else {
+    listEl.innerHTML = unopenedDomains.map(function(d){
+      return '<div class="domain-check">' +
+        '<input type="checkbox" value="'+d.name+'" onchange="onDomainCheck(this)">' +
+        '<span class="dc-name" title="'+d.name+'">'+d.name+'</span>' +
+        teshdStateHtml(d) +
+      '</div>';
+    }).join('');
+  }
   document.getElementById('restyleModal').classList.add('show');
 }
 
-/* 勾选集合全部未配置极速高清 → 显示"开通并配置极速高清"按钮，否则隐藏 */
-function updateTeshdBtn(){
-  var checked = document.querySelectorAll('#domainCheckList input:checked');
-  var allNoTeshd = true;
-  if (checked.length) {
-    Array.prototype.forEach.call(checked, function(c){
-      var d = playDomains.filter(function(p){ return p.name === c.value; })[0];
-      if (d && d.hasTeshd) allNoTeshd = false;
-    });
-  }
-  document.getElementById('btnOpenWithTeshd').style.display = (checked.length && allNoTeshd) ? '' : 'none';
+/* 原型 mock：已开通实时重绘的播放域名（预览页演示时置空） */
+function getOpenedDomains(){ return []; }
+
+/* 快速配置极速高清：mock 切换为已配置并刷新该行 */
+function quickConfigTeshd(domain){
+  playDomains.forEach(function(d){ if (d.name === domain) d.hasTeshd = true; });
+  openActivateModal();
+  showToast('已为「'+domain+'」快速配置极速高清');
 }
 
 function onDomainCheck(cb){
   cb.parentElement.classList.toggle('checked', cb.checked);
-  updateTeshdBtn();
 }
 function closeActivateModal(){ document.getElementById('restyleModal').classList.remove('show'); }
 
-function confirmActivate(mode){
+function confirmActivate(){
   var checked = document.querySelectorAll('#domainCheckList input:checked');
   if (!checked.length) { showToast('请至少选择一个播放域名'); return; }
   var names = Array.from(checked).map(function(c){ return c.value; });
@@ -840,11 +886,7 @@ function confirmActivate(mode){
   document.getElementById('tabRestyle').classList.remove('locked');
   // 切到重绘 tab
   switchTab('restyle');
-  if (mode === 'withTeshd') {
-    showToast('已为「'+streamName+'」开通实时重绘并配置极速高清：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
-  } else {
-    showToast('已为「'+streamName+'」开通实时重绘：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
-  }
+  showToast('已为「'+streamName+'」开通实时重绘：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
 }
 
 var toastTimer;
