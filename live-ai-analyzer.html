@@ -926,7 +926,7 @@
         var stEl = _pi.querySelector('.cfg-tag[data-key="onlineStream"] .cfg-text');
         var st = (stEl && stEl.textContent.trim() && stEl.textContent.trim() !== '请选择在线流') ? stEl.textContent.trim() : '当前直播流';
         var _tb = document.getElementById('toastBody');
-        _tb.innerHTML = '已为「' + st + '」开通实时重绘，记录已同步至 <a href="domain-advanced-config.html" target="_blank" rel="noopener">域名管理 &gt; 高级配置 &gt; 实时重绘</a>。拉流方携带参数 <span class="param-hint">txFeature=Restyle</span> 即可看到动漫风格，未携带则为原始流。实时重绘功能必须配合极速高清转码功能一起使用才能生效。';
+        _tb.innerHTML = '已为「' + st + '」开通实时重绘，记录已同步至 <a href="domain-advanced-config.html" target="_blank" rel="noopener">域名管理 &gt; 高级配置 &gt; 实时重绘</a>。实时重绘必须配合极速高清转码功能一起使用，拉流方携带参数 <span class="param-hint">txFeature=Restyle</span> 即可看到动漫风格，未携带则为原始流。';
         document.getElementById('toast').classList.add('show');
         if (window._toastTimer) clearTimeout(window._toastTimer);
         window._toastTimer = setTimeout(function(){ document.getElementById('toast').classList.remove('show'); }, 4200);
