@@ -388,6 +388,24 @@
     font-size: 13px; color: var(--text-1);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  /* 极速高清配置状态标签 */
+  .teshd-tag {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 11.5px; padding: 2px 10px; border-radius: 10px;
+    color: var(--text-3); background: #F5F6F8;
+  }
+  .teshd-tag.yes { color: #2BA471; background: rgba(43,164,113,0.10); }
+  .teshd-tag.no { color: var(--text-3); background: #F5F6F8; }
+  /* 已开通重绘的域名行（disabled） */
+  .domain-check.opened-row {
+    background: var(--bg-page);
+    border-color: var(--border);
+  }
+  .domain-check.opened-row .dc-name { color: var(--text-1); }
+  .domain-check.opened-row .opened-mark {
+    margin-left: 6px; font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: var(--brand-light); color: var(--brand); flex-shrink: 0;
+  }
 
   /* 已开通实时重绘的播放域名展示 */
   .opened-area { margin-top: 18px; }
@@ -598,14 +616,8 @@
           <span>
             实时重绘功能在秀场直播、竖屏直播等场景使用效果更佳，必须配合极速高清转码功能一起使用才能生效。
             <br />
-            请选择开通重绘功能的播放域名及用于预览重绘流的极速高清转码模板。
+            请选择要开通实时重绘的播放域名；已开通的域名不可取消。
           </span>
-        </div>
-
-        <!-- 已开通实时重绘的播放域名 -->
-        <div class="opened-area" id="openedArea" style="display:none">
-          <div class="ds-label">已开通实时重绘的播放域名</div>
-          <div class="opened-list" id="openedDomainList"></div>
         </div>
 
         <div class="ds-label">选择播放域名 <span class="req">*</span></div>
@@ -615,7 +627,8 @@
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeRestyleModal()">取消</button>
-      <button class="btn-brand" onclick="confirmRestyle()">确认</button>
+      <button class="btn" id="btnOnlyOpen" onclick="confirmRestyle('only')">仅开通</button>
+      <button class="btn-brand" id="btnOpenWithTeshd" onclick="confirmRestyle('withTeshd')" style="display:none">开通并配置极速高清</button>
     </div>
   </div>
 </div>
@@ -630,9 +643,9 @@ var streams = [
 ];
 
 var playDomains = [
-  { name:'live-0001.liveplay.myqcloud.com', type:'播放' },
-  { name:'live-0002.liveplay.myqcloud.com', type:'播放' },
-  { name:'play.mydomain.com', type:'播放' },
+  { name:'live-0001.liveplay.myqcloud.com', hasTeshd: false },
+  { name:'live-0002.liveplay.myqcloud.com', hasTeshd: false },
+  { name:'play.mydomain.com', hasTeshd: true },
 ];
 
 var currentStream = null;
@@ -712,129 +725,76 @@ function closeDropdown(){ document.querySelectorAll('.more-dropdown').forEach(fu
 /* ========== 实时重绘开通弹窗 ========== */
 
 /* 极速高清转码模板（mock） */
-var tplTemplates = [
-  { id: 'tpl-720', name: '极速高清-720P 推荐', rec: true },
-  { id: 'tpl-1080', name: '极速高清-1080P', rec: false },
-  { id: 'tpl-adapt', name: '码率自适应模板', rec: false }
-];
-var selectedTpl = null;
-/* 每个域名对应的极速高清模板（domain -> tplId） */
-var domainTplMap = {};
-
-/* 模板选项 HTML（含快捷创建入口） */
-function tplOptionsHtml(domain, current){
-  var items = '';
-  if (!tplTemplates.length) {
-    items = '<div class="opt-empty">暂无极速高清转码模板</div>';
-  } else {
-    items = tplTemplates.map(function(t){
-      return '<div class="opt'+(current===t.id?' active':'')+'" onclick="pickRowTpl(event,\''+escAttr(domain)+'\',\''+t.id+'\',\''+t.name.replace(/'/g,"\\'")+'\')">' +
-        t.name + (t.rec ? '<span class="tpl-rec">推荐</span>' : '') +
-      '</div>';
-    }).join('');
-  }
-  return items +
-    '<div class="opt-sep"></div>' +
-    '<div class="opt quick" onclick="quickCreateRowTpl(event)">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-      '快捷创建极速高清转码模板' +
-    '</div>';
-}
-
-/* 行内模板下拉开关 */
-function toggleRowTpl(e, el){
-  e.stopPropagation();
-  var menu = el.parentElement.querySelector('.tpl-menu');
-  document.querySelectorAll('.tpl-menu.show').forEach(function(m){
-    if (m !== menu) m.classList.remove('show');
-  });
-  menu.classList.toggle('show');
-}
-function pickRowTpl(e, domain, id, name){
-  e.stopPropagation();
-  domainTplMap[domain] = id;
-  var row = e.target.closest('.row-tpl');
-  var txt = row.querySelector('.tpl-txt');
-  txt.textContent = name;
-  txt.classList.remove('tpl-empty-txt');
-  row.querySelector('.tpl-menu').classList.remove('show');
-}
-function quickCreateRowTpl(e){
-  e.stopPropagation();
-  document.querySelectorAll('.tpl-menu.show').forEach(function(m){ m.classList.remove('show'); });
-  showToast('正在跳转创建极速高清转码模板…（原型占位）');
-}
-document.addEventListener('click', function(){
-  document.querySelectorAll('.tpl-menu.show').forEach(function(m){ m.classList.remove('show'); });
-});
+/* ========== 实时重绘开通弹窗 ========== */
 
 function openRestyle(streamName, app, pushDomain){
   currentStream = { streamName: streamName, app: app, pushDomain: pushDomain };
   document.getElementById('rsStreamName').textContent = streamName;
   document.getElementById('rsApp').textContent = app;
-  domainTplMap = {};
 
-  // 只展示当前流未开通实时重绘的播放域名
+  // 已开通实时重绘的播放域名（含应用范围为"全部"的规则）→ 优先展示、勾选且不可取消
   var opened = getOpenedDomains(streamName, app);
-  var unopenedDomains = playDomains.filter(function(d){ return opened.indexOf(d.name) < 0; });
-
-  // 渲染已开通区域
-  var openedArea = document.getElementById('openedArea');
-  var openedListEl = document.getElementById('openedDomainList');
-  if (opened.length) {
-    openedArea.style.display = '';
-    openedListEl.innerHTML = opened.map(function(name){
-      return '<span class="opened-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'+esc(name)+'</span>';
-    }).join('');
-  } else {
-    openedArea.style.display = 'none';
-  }
-
   var listEl = document.getElementById('domainCheckList');
-  if (!unopenedDomains.length) {
-    listEl.innerHTML = '<span class="opened-empty">所有可用播放域名均已开通</span>';
+
+  if (!playDomains.length) {
+    listEl.innerHTML = '<span class="opened-empty">无已启用的播放域名</span>';
   } else {
-    listEl.innerHTML = unopenedDomains.map(function(d){
-      return '<div class="domain-check">' +
-        '<input type="checkbox" value="'+escAttr(d.name)+'" onchange="onDomainCheck(this)">' +
-        '<span class="dc-name" title="'+escAttr(d.name)+'">'+esc(d.name)+'</span>' +
-        '<div class="row-tpl">' +
-          '<div class="tpl-select" onclick="toggleRowTpl(event,this)">' +
-            '<span class="tpl-txt tpl-empty-txt">选择极速高清转码模板预览</span>' +
-            '<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
-          '</div>' +
-          '<div class="tpl-menu">'+tplOptionsHtml(d.name, null)+'</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    // 已开通的优先，其余按原顺序
+    var openedRows = [], normalRows = [];
+    playDomains.forEach(function(d){
+      var isOpened = opened.indexOf(d.name) >= 0;
+      var html =
+        '<div class="domain-check'+(isOpened?' opened-row':'')+(isOpened?' checked':'')+'">' +
+          '<input type="checkbox" value="'+escAttr(d.name)+'"'+(isOpened?' checked disabled':'')+' onchange="onDomainCheck(this)">' +
+          '<span class="dc-name" title="'+escAttr(d.name)+'">'+esc(d.name)+'</span>' +
+          (isOpened ? '<span class="opened-mark">已开通</span>' : '') +
+          '<span class="teshd-tag '+(d.hasTeshd?'yes':'no')+'">极速高清：'+(d.hasTeshd?'是':'否')+'</span>' +
+        '</div>';
+      if (isOpened) openedRows.push(html); else normalRows.push(html);
+    });
+    listEl.innerHTML = openedRows.concat(normalRows).join('');
   }
 
+  // 计算按钮显隐
+  updateTeshdBtn();
   document.getElementById('restyleMask').classList.add('show');
+}
+
+/* 勾选集合全部未配置极速高清 → 显示"开通并配置极速高清"按钮，否则隐藏 */
+function updateTeshdBtn(){
+  var checked = document.querySelectorAll('#domainCheckList input:checked');
+  var allNoTeshd = true;
+  if (checked.length) {
+    Array.prototype.forEach.call(checked, function(c){
+      var d = playDomains.filter(function(p){ return p.name === c.value; })[0];
+      if (d && d.hasTeshd) allNoTeshd = false;
+    });
+  }
+  document.getElementById('btnOpenWithTeshd').style.display = (checked.length && allNoTeshd) ? '' : 'none';
 }
 
 function onDomainCheck(cb){
   cb.parentElement.classList.toggle('checked', cb.checked);
+  updateTeshdBtn();
 }
 
 function closeRestyleModal(){
   document.getElementById('restyleMask').classList.remove('show');
 }
 
-function confirmRestyle(){
+function confirmRestyle(mode){
   var checked = document.querySelectorAll('#domainCheckList input:checked');
   if(!checked.length){
     showToast('请至少选择一个播放域名');
     return;
   }
-  // 逐域名校验模板
-  var missing = Array.from(checked).filter(function(c){ return !domainTplMap[c.value]; });
-  if (missing.length){
-    showToast('请为播放域名「'+missing[0].value+'」选择极速高清转码模板');
-    return;
-  }
   var names = Array.from(checked).map(function(c){ return c.value; });
   closeRestyleModal();
-  showToast('已为「'+currentStream.streamName+'」开通实时重绘：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
+  if (mode === 'withTeshd') {
+    showToast('已为「'+currentStream.streamName+'」开通实时重绘并配置极速高清：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
+  } else {
+    showToast('已为「'+currentStream.streamName+'」开通实时重绘：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
+  }
 }
 
 /* ========== Toast ========== */
