@@ -477,7 +477,7 @@
             <div class="wave">
               <span></span><span></span><span></span><span></span><span></span>
             </div>
-            <div class="msg">正在应用动漫风格，预计 20s 左右…</div>
+            <div class="msg">正在应用动漫风格，预计 5~10 秒…</div>
           </div>
         </div>
       </div>
@@ -525,7 +525,7 @@ var demoLabelMap = { ecom: '电商带货直播', show: '秀场直播' };
 var srcLabelMap = { local: '本地开播', upload: '本地视频', stream: '拉取直播流', demo: demoLabelMap[demoKey] };
 document.getElementById('tagInput').textContent = srcLabelMap[src] || '电商带货直播';
 
-/* 20s 生成 → 显示右侧画面并开始倒计时 */
+/* 5~10s 生成（原型缩短为 3s 便于演示） → 显示右侧画面并开始倒计时 */
 var remain = 180, cdTimer;
 
 function startGenerate(){
