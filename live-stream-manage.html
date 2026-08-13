@@ -308,6 +308,64 @@
 
   .ds-hint { font-size: 12px; color: var(--text-3); margin-top: 8px; line-height: 1.6; }
 
+  /* 依赖提示条：极速高清 */
+  .dep-tip {
+    display: flex; align-items: flex-start; gap: 7px;
+    padding: 9px 12px; margin: 14px 0 4px;
+    background: var(--brand-soft);
+    border: 1px solid rgba(0,82,217,0.12);
+    border-radius: 6px;
+    font-size: 12px; color: var(--text-2); line-height: 1.6;
+  }
+  .dep-tip svg { flex-shrink: 0; color: var(--brand); margin-top: 2px; }
+
+  /* 极速高清模板下拉 */
+  .tpl-field { margin-top: 14px; }
+  .tpl-field .ds-label { margin-bottom: 8px; }
+  .tpl-select {
+    position: relative;
+    height: 36px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; font-size: 13px; color: var(--text-1);
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .tpl-select:hover { border-color: var(--brand); }
+  .tpl-select .caret {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-3); width: 14px; height: 14px; pointer-events: none;
+  }
+  .tpl-select .tpl-empty-txt { color: var(--text-4); }
+  .tpl-menu {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 30;
+    padding: 4px; display: none;
+  }
+  .tpl-menu.show { display: block; }
+  .tpl-menu .opt {
+    padding: 7px 10px; border-radius: 4px; font-size: 13px;
+    cursor: pointer; color: var(--text-1);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tpl-menu .opt:hover { background: var(--bg-page); }
+  .tpl-menu .opt.active { color: var(--brand); background: var(--brand-light); }
+  .tpl-menu .opt .tpl-rec {
+    margin-left: auto; font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: var(--brand-light); color: var(--brand);
+  }
+  .tpl-menu .opt-sep {
+    height: 1px; background: var(--border-light); margin: 4px 6px;
+  }
+  .tpl-menu .opt.quick {
+    color: var(--brand); font-weight: 500;
+  }
+  .tpl-menu .opt.quick svg { width: 13px; height: 13px; }
+  .tpl-menu .opt-empty {
+    padding: 10px; font-size: 12.5px; color: var(--text-3); text-align: center;
+  }
+
   /* 已开通实时重绘的播放域名展示 */
   .opened-area { margin-top: 18px; }
   .opened-list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -511,6 +569,22 @@
       <div class="info-row"><span class="info-label">AppName：</span><span class="info-val" id="rsApp">—</span></div>
 
       <div class="domain-select-area">
+        <!-- 依赖提示 -->
+        <div class="dep-tip">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>实时重绘功能必须配合极速高清转码功能一起使用才能生效。</span>
+        </div>
+
+        <!-- 极速高清模板 -->
+        <div class="tpl-field">
+          <div class="ds-label">极速高清转码模板 <span class="req">*</span></div>
+          <div class="tpl-select" onclick="toggleTplMenu(event)">
+            <span id="tplValue" class="tpl-empty-txt">请选择极速高清转码模板</span>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tpl-menu" id="tplMenu"></div>
+        </div>
+
         <!-- 已开通实时重绘的播放域名 -->
         <div class="opened-area" id="openedArea" style="display:none">
           <div class="ds-label">已开通实时重绘的播放域名</div>
@@ -619,10 +693,69 @@ function closePad(el){ closeDropdown(); showToast('已关闭垫片，恢复原�
 function closeDropdown(){ document.querySelectorAll('.more-dropdown').forEach(function(d){ d.classList.remove('show'); }); }
 
 /* ========== 实时重绘开通弹窗 ========== */
+
+/* 极速高清转码模板（mock） */
+var tplTemplates = [
+  { id: 'tpl-720', name: '极速高清-720P 推荐', rec: true },
+  { id: 'tpl-1080', name: '极速高清-1080P', rec: false },
+  { id: 'tpl-adapt', name: '码率自适应模板', rec: false }
+];
+var selectedTpl = null;
+
+function renderTplMenu(){
+  var menu = document.getElementById('tplMenu');
+  if (!tplTemplates.length) {
+    menu.innerHTML =
+      '<div class="opt-empty">暂无极速高清转码模板</div>' +
+      '<div class="opt-sep"></div>' +
+      '<div class="opt quick" onclick="quickCreateTpl(event)">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        '快捷创建极速高清转码模板' +
+      '</div>';
+    return;
+  }
+  menu.innerHTML = tplTemplates.map(function(t){
+    return '<div class="opt'+(selectedTpl===t.id?' active':'')+'" onclick="pickTpl(\''+t.id+'\',\''+t.name.replace(/'/g,"\\'")+'\')">' +
+      t.name + (t.rec ? '<span class="tpl-rec">推荐</span>' : '') +
+    '</div>';
+  }).join('') +
+  '<div class="opt-sep"></div>' +
+  '<div class="opt quick" onclick="quickCreateTpl(event)">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+    '快捷创建极速高清转码模板' +
+  '</div>';
+}
+
+function toggleTplMenu(e){
+  e.stopPropagation();
+  renderTplMenu();
+  document.getElementById('tplMenu').classList.toggle('show');
+}
+function pickTpl(id, name){
+  selectedTpl = id;
+  var val = document.getElementById('tplValue');
+  val.textContent = name;
+  val.classList.remove('tpl-empty-txt');
+  document.getElementById('tplMenu').classList.remove('show');
+}
+function quickCreateTpl(e){
+  e.stopPropagation();
+  document.getElementById('tplMenu').classList.remove('show');
+  showToast('正在跳转创建极速高清转码模板…（原型占位）');
+}
+document.addEventListener('click', function(){
+  document.getElementById('tplMenu').classList.remove('show');
+});
+
 function openRestyle(streamName, app, pushDomain){
   currentStream = { streamName: streamName, app: app, pushDomain: pushDomain };
   document.getElementById('rsStreamName').textContent = streamName;
   document.getElementById('rsApp').textContent = app;
+  // 重置极速高清模板选择
+  selectedTpl = null;
+  var val = document.getElementById('tplValue');
+  val.textContent = '请选择极速高清转码模板';
+  val.classList.add('tpl-empty-txt');
 
   // 只展示当前流未开通实时重绘的播放域名
   var opened = getOpenedDomains(streamName, app);
@@ -664,6 +797,10 @@ function closeRestyleModal(){
 }
 
 function confirmRestyle(){
+  if(!selectedTpl){
+    showToast('请先选择极速高清转码模板');
+    return;
+  }
   var checked = document.querySelectorAll('#domainCheckList input:checked');
   if(!checked.length){
     showToast('请至少选择一个播放域名');
@@ -671,7 +808,7 @@ function confirmRestyle(){
   }
   var names = Array.from(checked).map(function(c){ return c.value; });
   closeRestyleModal();
-  showToast('已为「'+currentStream.streamName+'」在 '+names.length+' 个播放域名开通实时重绘。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
+  showToast('已为「'+currentStream.streamName+'」在 '+names.length+' 个播放域名开通实时重绘（极速高清转码模板：'+tplTemplates.filter(function(t){return t.id===selectedTpl;})[0].name+'）。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
 }
 
 /* ========== Toast ========== */
