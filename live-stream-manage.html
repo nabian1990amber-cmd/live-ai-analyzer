@@ -595,7 +595,7 @@
         <!-- 依赖提示 -->
         <div class="dep-tip">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>实时重绘功能必须配合极速高清转码功能一起使用才能生效。请为每个播放域名选择对应的极速高清转码模板。</span>
+          <span>实时重绘功能必须配合极速高清转码功能一起使用才能生效。请选择用于预览重绘流的极速高清转码模板。</span>
         </div>
 
         <!-- 已开通实时重绘的播放域名 -->
@@ -665,7 +665,7 @@ function render() {
         '<div class="more-dropdown">' +
           '<button class="more-dd-item" onclick="openPad(this)">切入垫片</button>' +
           '<button class="more-dd-item" onclick="closePad(this)">关闭垫片</button>' +
-          '<button class="more-dd-item" onclick="openRestyle(\''+escAttr(s.streamName)+'\',\''+escAttr(s.app)+'\',\''+escAttr(s.pushDomain)+'\')">重绘</button>' +
+          '<button class="more-dd-item" onclick="openRestyle(\''+escAttr(s.streamName)+'\',\''+escAttr(s.app)+'\',\''+escAttr(s.pushDomain)+'\')">开启重绘</button>' +
         '</div>' +
       '</div></td>' +
     '</tr>';
@@ -796,7 +796,7 @@ function openRestyle(streamName, app, pushDomain){
         '<span class="dc-name" title="'+escAttr(d.name)+'">'+esc(d.name)+'</span>' +
         '<div class="row-tpl">' +
           '<div class="tpl-select" onclick="toggleRowTpl(event,this)">' +
-            '<span class="tpl-txt tpl-empty-txt">选择模板</span>' +
+            '<span class="tpl-txt tpl-empty-txt">选择极速高清转码模板预览</span>' +
             '<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
           '</div>' +
           '<div class="tpl-menu">'+tplOptionsHtml(d.name, null)+'</div>' +
@@ -829,10 +829,8 @@ function confirmRestyle(){
     return;
   }
   var names = Array.from(checked).map(function(c){ return c.value; });
-  var tplName = function(d){ return tplTemplates.filter(function(t){return t.id===domainTplMap[d];})[0].name; };
-  var pairs = names.map(function(d){ return d + '（' + tplName(d) + '）'; }).join('、');
   closeRestyleModal();
-  showToast('已为「'+currentStream.streamName+'」开通实时重绘：'+pairs+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
+  showToast('已为「'+currentStream.streamName+'」开通实时重绘：'+names.join('、')+'。记录已同步至 域名管理 › 高级配置 › 实时重绘。');
 }
 
 /* ========== Toast ========== */
